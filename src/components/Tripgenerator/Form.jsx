@@ -1,5 +1,6 @@
+import { model } from "../../services/gemini";
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const Form = () => {
 
@@ -22,8 +23,11 @@ const Form = () => {
   ];
 
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleGenerateTrip = () => {
+  const handleGenerateTrip = async () => {
+
+    console.log("Button clicked");
 
     if (!city || !budget || !duration || !travelStyle) {
       alert("Please fill all required fields");
@@ -32,20 +36,77 @@ const Form = () => {
 
     setLoading(true);
 
-    console.log({
-      city,
-      destination,
-      budget,
-      duration,
-      fromDate,
-      toDate,
-      travelStyle,
-      preferences,
-    });
+    try {
 
-    setTimeout(() => {
-      setLoading(false);
-    }, 3000);
+      console.log("Calling Gemini...");
+
+      const prompt = `
+Create a travel itinerary.
+
+Starting City: ${city}
+Destination: ${destination}
+Budget: ${budget}
+Duration: ${duration} days
+Travel Style: ${travelStyle}
+Preferences: ${preferences}
+
+Return ONLY valid JSON.
+
+Format:
+
+{
+  "tripTitle": "",
+  "overview": "",
+  "days": [
+    {
+      "day": 1,
+      "title": "",
+      "activities": [
+        {
+          "time": "",
+          "title": "",
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "budgetBreakdown": [],
+  "travelTips": []
+}
+
+Do not include markdown.
+Do not include explanations.
+Return JSON only.
+`;
+      const result = await model.generateContent(prompt);
+
+      console.log("Gemini responded");
+
+      const responseText = result.response.text();
+
+      console.log(responseText);
+
+      navigate("/trip-details", {
+        state: {
+          city,
+          destination,
+          budget,
+          duration,
+          fromDate,
+          toDate,
+          travelStyle,
+          preferences,
+          tripData: responseText,
+        },
+      });
+
+    } catch (error) {
+
+      console.error("Gemini Error:", error);
+
+    }
+
+    setLoading(false);
   };
 
   return (
@@ -181,13 +242,12 @@ const Form = () => {
       </div>
 
 
-      <Link
-        to="/trip-details"
+      <button
         onClick={handleGenerateTrip}
         className="block mt-10 w-full py-5 rounded-2xl text-white font-semibold text-lg bg-gradient-to-r from-blue-600 to-purple-600 text-center transition duration-300 ease-in-out hover:scale-105"
       >
         {loading ? "Generating..." : "✨ Generate My Trip with AI"}
-      </Link>
+      </button>
 
       <p className="text-center text-gray-500 mt-8">
         🔒 Your preferences are private and secure
