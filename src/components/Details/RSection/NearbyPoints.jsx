@@ -78,25 +78,35 @@ function NearbyPoints({ destination }) {
         const overpassQuery = `
       [out:json];
       (
-        node(around:5000,${lat},${lon})["tourism"="attraction"];
-        node(around:5000,${lat},${lon})["tourism"="museum"];
-        node(around:5000,${lat},${lon})["leisure"="park"];
-        node(around:5000,${lat},${lon})["historic"];
+        node(around:2500,${lat},${lon})["tourism"="attraction"];
+        node(around:2500,${lat},${lon})["tourism"="museum"];
+        node(around:2500,${lat},${lon})["leisure"="park"];
+        node(around:2500,${lat},${lon})["historic"];
       );
       out body;
       `;
 
         const response = await fetch(
-          "https://overpass-api.de/api/interpreter",
+          "https://overpass.kumi.systems/api/interpreter",
           {
             method: "POST",
             body: overpassQuery,
           }
         );
 
-        const data = await response.json();
+        if (!response.ok) {
+  console.error("Overpass Error:", response.status);
+  return;
+}
 
-        const formatted = data.elements
+const data = await response.json();
+
+        if (!data.elements) {
+  setPlaces([]);
+  return;
+}
+
+const formatted = data.elements
           .filter((item) => item.tags?.name)
           .slice(0, 6)
           .map((item) => ({
@@ -117,6 +127,12 @@ function NearbyPoints({ destination }) {
           }));
 
         setPlaces(formatted);
+        console.log("Nearby Data:", data);
+        console.log("Destination:", destination);
+console.log("Latitude:", lat);
+console.log("Longitude:", lon);
+console.log("Raw Elements:", data.elements);
+console.log("Formatted:", formatted);
 
       } catch (err) {
         console.log(err);
@@ -136,7 +152,18 @@ function NearbyPoints({ destination }) {
       </h2>
 
       <div className="grid md:grid-cols-2 gap-4">
-        {places.map((place, index) => {
+
+  {places.length === 0 && (
+
+    <div className="col-span-2 text-center py-10 text-gray-400">
+
+      No nearby attractions found
+
+    </div>
+
+  )}
+
+  {places.map((place, index) => {
           const Icon = getIcon(place.type);
 
           return (

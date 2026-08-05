@@ -137,6 +137,7 @@ function CuratedTrips({ destination }) {
                 console.log(data);
 
                 setPlaces(data.places || []);
+                console.log("Curated Places:", data.places);
             } catch (err) {
                 console.log(err);
                 setPlaces([]);
@@ -241,7 +242,7 @@ function CuratedTrips({ destination }) {
                             {/* Image */}
 
                             <div className="relative h-60 overflow-hidden">
-
+                                
                                 <img
                                     src={getPlaceImage(place)}
                                     alt={place.displayName?.text}
