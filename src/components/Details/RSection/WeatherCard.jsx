@@ -1,47 +1,462 @@
-import { Cloud } from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+  Sun,
+  Cloud,
+  CloudRain,
+  CloudSnow,
+  CloudLightning,
+  CloudDrizzle,
+  CloudSun,
+  Wind,
+  Droplets,
+  Thermometer,
+} from "lucide-react";
 
-const WeatherCard = () => {
-  const forecast = [
-    { day: "Mon", temp: "22°C", icon: "☀️" },
-    { day: "Tue", temp: "22°C", icon: "☀️" },
-    { day: "Wed", temp: "22°C", icon: "☀️" },
-    { day: "Thu", temp: "22°C", icon: "☀️" },
-    { day: "Fri", temp: "22°C", icon: "☀️" },
-  ];
+function WeatherCard({ destination }) {
 
+  const [weather, setWeather] = useState(null);
+  const [forecast, setForecast] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const getWeatherInfo = (code) => {
+
+    if (code === 0)
+      return {
+        text: "Sunny",
+        gradient: "from-sky-500 to-blue-700",
+        icon: <Sun size={60} className="text-yellow-300 drop-shadow-lg" />,
+        smallIcon: <Sun size={18} className="text-yellow-500" />,
+      };
+
+    if (code === 1)
+      return {
+        text: "Mainly Clear",
+        gradient: "from-sky-500 to-indigo-700",
+        icon: <CloudSun size={60} className="text-yellow-200" />,
+        smallIcon: <CloudSun size={18} />,
+      };
+
+    if (code === 2)
+      return {
+        text: "Partly Cloudy",
+        gradient: "from-slate-500 to-slate-700",
+        icon: <CloudSun size={60} className="text-white" />,
+        smallIcon: <CloudSun size={18} />,
+      };
+
+    if ([3, 45, 48].includes(code))
+      return {
+        text: "Overcast",
+        gradient: "from-slate-600 to-slate-800",
+        icon: <Cloud size={60} className="text-white" />,
+        smallIcon: <Cloud size={18} />,
+      };
+
+    if ([51, 53, 55].includes(code))
+      return {
+        text: "Drizzle",
+        gradient: "from-blue-700 to-slate-900",
+        icon: <CloudDrizzle size={60} className="text-blue-100" />,
+        smallIcon: <CloudDrizzle size={18} />,
+      };
+
+    if ([61, 63, 65, 80, 81, 82].includes(code))
+      return {
+        text: "Rain",
+        gradient: "from-blue-800 to-slate-900",
+        icon: <CloudRain size={60} className="text-blue-100" />,
+        smallIcon: <CloudRain size={18} />,
+      };
+
+    if ([71, 73, 75, 77, 85, 86].includes(code))
+      return {
+        text: "Snow",
+        gradient: "from-cyan-500 to-sky-700",
+        icon: <CloudSnow size={60} className="text-white" />,
+        smallIcon: <CloudSnow size={18} />,
+      };
+
+    if ([95, 96, 99].includes(code))
+      return {
+        text: "Thunderstorm",
+        gradient: "from-indigo-900 to-slate-900",
+        icon: <CloudLightning size={60} className="text-yellow-300 animate-pulse" />,
+        smallIcon: <CloudLightning size={18} />,
+      };
+
+    return {
+      text: "Cloudy",
+      gradient: "from-blue-600 to-purple-700",
+      icon: <Cloud size={60} className="text-white" />,
+      smallIcon: <Cloud size={18} />,
+    };
+  };
+
+  const getUVLabel = (uv) => {
+    if (uv <= 2) return "Low";
+    if (uv <= 5) return "Moderate";
+    if (uv <= 7) return "High";
+    if (uv <= 10) return "Very High";
+    return "Extreme";
+  };
+
+  useEffect(() => {
+
+    const fetchWeather = async () => {
+
+      setLoading(true);
+
+      try {
+
+        const locationResponse = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${destination}`
+        );
+
+        const locationData = await locationResponse.json();
+
+        if (!locationData.length) return;
+
+        const lat = locationData[0].lat;
+        const lon = locationData[0].lon;
+
+        const weatherResponse = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,weather_code,uv_index&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=7&timezone=auto`
+        );
+
+        const weatherData = await weatherResponse.json();
+
+        console.log(weatherData);
+
+        if (
+          weatherData.error ||
+          !weatherData.current ||
+          !weatherData.daily
+        ) {
+          setWeather(null);
+          setForecast([]);
+          return;
+        }
+
+        setWeather(weatherData.current);
+
+        const days = [
+          "Sun",
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri",
+          "Sat",
+        ];
+
+        const formattedForecast =
+          weatherData.daily.time.map((date, index) => ({
+            day: days[new Date(date).getDay()],
+            high: Math.round(
+              weatherData.daily.temperature_2m_max[index]
+            ),
+            low: Math.round(
+              weatherData.daily.temperature_2m_min[index]
+            ),
+            weatherCode:
+              weatherData.daily.weather_code[index],
+            precipitation:
+              weatherData.daily.precipitation_probability_max[index],
+          }));
+
+        setForecast(formattedForecast);
+
+      } catch (err) {
+
+        console.log(err);
+
+      } finally {
+
+        setLoading(false);
+
+      }
+    };
+
+    if (destination) {
+      fetchWeather();
+    }
+
+  }, [destination]);
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-10 text-center">
+        <p className="text-gray-500">
+          Loading weather...
+        </p>
+      </div>
+    );
+  }
+
+  if (!weather) {
   return (
-    <div className="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm">
-      <div className="flex items-center gap-3 mb-6">
-        <Cloud className="text-green-500" size={24} />
-        <h3 className="text-lg font-semibold">
-          Weather Forecast
-        </h3>
-      </div>
+    <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-10 text-center">
+      <p className="text-red-500 font-medium">
+        Weather service is temporarily unavailable.
+      </p>
 
-      <div className="space-y-4">
-        {forecast.map((item) => (
-          <div
-            key={item.day}
-            className="bg-gray-200 rounded-2xl px-4 py-3 flex justify-between items-center"
-          >
-            <span className="text-base font-medium">
-              {item.day}
-            </span>
-
-            <div className="flex items-center gap-4">
-              <span className="text-2xl">
-                {item.icon}
-              </span>
-
-              <span className="text-base font-medium">
-                {item.temp}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
+      <p className="text-gray-500 mt-2 text-sm">
+        Please try again later.
+      </p>
     </div>
   );
-};
+}
+
+  const weatherInfo = weather
+    ? getWeatherInfo(weather.weather_code)
+    : getWeatherInfo(0);
+
+  const rainyDay = forecast.find(
+    (day) => day.precipitation > 60
+  );
+  return (
+    <div className="bg-white rounded-3xl overflow-hidden border border-gray-200 shadow-sm">
+
+      {/* Top Weather Section */}
+
+      <div
+        className={`bg-gradient-to-br ${weatherInfo.gradient} p-6 text-white`}
+      >
+
+        <div className="flex justify-between items-start">
+
+          <div>
+
+            <p className="text-sm font-semibold text-white/80">
+              {destination} •{" "}
+              {new Date().toLocaleDateString("en-US", {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+              })}
+            </p>
+
+            <h1 className="text-4xl font-bold tracking-tight leading-none mt-2">
+              {Math.round(weather.temperature_2m)}°C
+            </h1>
+
+            <p className="mt-2 text-sm opacity-95">
+              {weatherInfo.text} • Feels like{" "}
+              {Math.round(weather.apparent_temperature)}°C
+            </p>
+
+          </div>
+
+          {weatherInfo.icon}
+
+        </div>
+
+        {/* Stats */}
+
+        <div className="grid grid-cols-3 gap-3 mt-6">
+
+          <div className="bg-white/10 backdrop-blur rounded-2xl p-3 text-center">
+
+            <Wind
+              className="mx-auto mb-2"
+              size={16}
+            />
+
+            <p className="text-xs opacity-80">
+              Wind
+            </p>
+
+            <p className="font-semibold text-xs">
+              {Math.round(weather.wind_speed_10m)} km/h
+            </p>
+
+          </div>
+
+          <div className="bg-white/10 backdrop-blur rounded-2xl p-3 text-center">
+
+            <Droplets
+              className="mx-auto mb-2"
+              size={16}
+            />
+
+            <p className="text-xs opacity-80">
+              Humidity
+            </p>
+
+            <p className="font-semibold text-xs">
+              {weather.relative_humidity_2m}%
+            </p>
+
+          </div>
+
+          <div className="bg-white/10 backdrop-blur rounded-2xl p-3 text-center">
+
+            <Thermometer
+              className="mx-auto mb-2"
+              size={16}
+            />
+
+            <p className="text-xs opacity-80">
+              UV Index
+            </p>
+
+            <p className="font-semibold text-xs">
+              {weather.uv_index} ({getUVLabel(weather.uv_index)})
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* Forecast */}
+
+      <div className="p-5">
+
+        <h3 className="font-semibold text-xs tracking-wide text-gray-500 mb-4">
+
+          7-DAY FORECAST
+
+        </h3>
+
+        <div className="space-y-2">
+
+          {forecast.map((item, index) => (
+
+            <div
+              key={index}
+              className={`flex items-center justify-between px-3 py-2.5 rounded-xl ${index === 0
+                  ? "bg-gray-100"
+                  : ""
+                }`}
+            >
+
+              <div className="flex items-center gap-3">
+
+                <span className="font-medium text-xs w-8">
+                  {item.day}
+                </span>
+
+                <span>
+                  {getWeatherInfo(item.weatherCode).smallIcon}
+                </span>
+
+                <span className="text-xs text-gray-600">
+                  {getWeatherInfo(item.weatherCode).text}
+                </span>
+
+              </div>
+
+              <div className="flex items-center gap-3">
+
+                <span className="text-xs font-medium">
+                  {item.high}° {item.low}°
+                </span>
+
+                {item.precipitation > 0 && (
+
+                  <span className="text-blue-500 text-xs font-semibold">
+
+                    💧 {item.precipitation}%
+
+                  </span>
+
+                )}
+
+              </div>
+
+            </div>
+
+          ))}
+
+        </div>
+
+        {/* Smart Weather Alert */}
+
+        <div className="mt-5 bg-amber-50 border border-amber-200 rounded-2xl p-4">
+
+          {rainyDay ? (
+
+            <>
+
+              <p className="font-semibold text-amber-900 text-sm">
+
+                🌧 Rain expected on {rainyDay.day}
+
+              </p>
+
+              <p className="text-xs text-amber-800 mt-1">
+
+                Carry an umbrella and keep indoor attractions as backup.
+
+              </p>
+
+            </>
+
+          ) : weather.weather_code === 95 ? (
+
+            <>
+
+              <p className="font-semibold text-amber-900 text-sm">
+
+                ⛈ Thunderstorm Alert
+
+              </p>
+
+              <p className="text-xs text-amber-800 mt-1">
+
+                Outdoor activities may be affected today.
+
+              </p>
+
+            </>
+
+          ) : weather.temperature_2m >= 35 ? (
+
+            <>
+
+              <p className="font-semibold text-amber-900 text-sm">
+
+                🔥 Hot Weather
+
+              </p>
+
+              <p className="text-xs text-amber-800 mt-1">
+
+                Stay hydrated and avoid direct sun during midday.
+
+              </p>
+
+            </>
+
+          ) : (
+
+            <>
+
+              <p className="font-semibold text-green-700 text-sm">
+
+                ☀ Great Weather Ahead
+
+              </p>
+
+              <p className="text-xs text-green-600 mt-1">
+
+                No significant rain expected. Perfect for sightseeing.
+
+              </p>
+
+            </>
+
+          )}
+
+        </div>
+
+      </div>
+
+    </div>
+  );
+
+}
 
 export default WeatherCard;
