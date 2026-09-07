@@ -1,5 +1,3 @@
-import React from 'react'
-
 const Ht = () => {
     return (
         <div className="pt-5 pb-12 text-center max-w-4xl mx-auto">

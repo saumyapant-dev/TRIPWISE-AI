@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   MapPin,
   Calendar,
@@ -6,25 +7,73 @@ import {
   Share2,
   Download,
   Sparkles,
-  Star
+  Star,
+  Edit3,
+  Trash2,
 } from "lucide-react";
+import { getDestinationCover } from "../../services/unsplash.js";
+import { getDestinationImage } from "../../services/api.js";
 
 function Hero({
   city,
   destination,
   duration,
   imageUrl,
+  travelStyle,
+  onSave,
+  onShare,
+  onExportPDF,
+  onEdit,
+  onDelete,
+  isSaved,
 }) {
+  const instantCover = getDestinationCover(destination, imageUrl);
+  const [currentCover, setCurrentCover] = useState(instantCover);
+  const [prevKey, setPrevKey] = useState(`${destination}_${imageUrl}`);
+
+  if (`${destination}_${imageUrl}` !== prevKey) {
+    setPrevKey(`${destination}_${imageUrl}`);
+    setCurrentCover(instantCover);
+  }
+
+  useEffect(() => {
+    let isMounted = true;
+
+    if (destination) {
+      getDestinationImage(destination)
+        .then((res) => {
+          if (isMounted && res && res.imageUrl && res.imageUrl.startsWith("http")) {
+            setCurrentCover(res.imageUrl);
+          }
+        })
+        .catch(() => {
+          // Gracefully keep instant cover
+        });
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [destination]);
+
   return (
     <div className="max-w-7xl mx-auto px-6 mt-8">
-
-      <div className="relative h-[390px] rounded-3xl overflow-hidden shadow-lg">
-
+      <div className="relative h-[390px] rounded-3xl overflow-hidden shadow-lg bg-slate-900">
         {/* Background Image */}
         <img
-          src={imageUrl}
+          key={`${destination}_${currentCover}`}
+          src={currentCover}
           alt={destination}
-          className="w-full h-full object-cover object-center"
+          onError={(e) => {
+            const fallback = getDestinationCover(destination);
+            if (e.currentTarget.src !== fallback) {
+              e.currentTarget.src = fallback;
+            } else {
+              e.currentTarget.src =
+                "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1600&h=800&fit=crop";
+            }
+          }}
+          className="w-full h-full object-cover object-center transition-opacity duration-500"
         />
 
         {/* Overlay */}
@@ -32,32 +81,24 @@ function Hero({
 
         {/* Top Left Badges */}
         <div className="absolute top-6 left-6 flex gap-3">
-
           <div className="px-4 py-2 rounded-xl bg-white/20 backdrop-blur-md border border-white/20 text-white text-sm font-medium flex items-center gap-2">
             <Sparkles size={16} />
             AI-Planned
           </div>
 
           <div className="px-4 py-2 rounded-xl bg-white/20 backdrop-blur-md border border-white/20 text-white text-sm font-medium flex items-center gap-2">
-            <Star
-              size={16}
-              fill="#facc15"
-              color="#facc15"
-            />
+            <Star size={16} fill="#facc15" color="#facc15" />
             Premium
           </div>
-
         </div>
 
         {/* Bottom Left Content */}
         <div className="absolute bottom-8 left-8 text-white">
-
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             {destination}
           </h1>
 
           <div className="flex flex-wrap items-center gap-6 text-lg">
-
             <div className="flex items-center gap-2">
               <MapPin size={18} />
               {destination}
@@ -68,75 +109,77 @@ function Hero({
               {duration} Days
             </div>
 
+            {city && (
+              <div className="flex items-center gap-2 opacity-90 text-sm md:text-base">
+                Departing from: {city}
+              </div>
+            )}
+
             <div className="flex items-center gap-2">
               <Users size={18} />
-              2 Travelers
+              {travelStyle ? `${travelStyle} Trip` : "Personalized Trip"}
             </div>
-
           </div>
-
         </div>
 
         {/* Bottom Right Actions */}
         <div className="absolute bottom-8 right-8 flex items-center gap-3">
+          {onEdit && (
+            <button
+              onClick={onEdit}
+              title="Edit Trip Details"
+              className="w-11 h-9 rounded-xl bg-white/20 hover:bg-white/30 border border-white/20 backdrop-blur-md text-white flex items-center justify-center transition cursor-pointer"
+            >
+              <Edit3 size={17} />
+            </button>
+          )}
 
           <button
-            className="
-              w-11 h-8
+            onClick={onSave}
+            title={isSaved ? "Saved to Dashboard" : "Save Trip"}
+            className={`
+              w-11 h-9
               rounded-xl
-              bg-white/20
-              border-1 border-solid border-white/20
+              ${isSaved ? "bg-red-500 text-white" : "bg-white/20 text-white hover:bg-white/30"}
+              border border-white/20
               backdrop-blur-md
-              text-white
               flex
               items-center
               justify-center
-              hover:bg-white/30
               transition
-            "
+              cursor-pointer
+            `}
           >
-            <Heart size={17} />
+            <Heart size={17} className={isSaved ? "fill-white" : ""} />
           </button>
 
           <button
-            className="
-              w-11 h-8
-              rounded-xl
-              bg-white/20
-              border-1 border-solid border-white/20
-              backdrop-blur-md
-              text-white
-              flex
-              items-center
-              justify-center
-              hover:bg-white/30
-              transition
-            "
+            onClick={onShare}
+            title="Share Trip"
+            className="w-11 h-9 rounded-xl bg-white/20 border border-white/20 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/30 transition cursor-pointer"
           >
             <Share2 size={17} />
           </button>
 
+          {onDelete && (
+            <button
+              onClick={onDelete}
+              title="Delete Trip"
+              className="w-11 h-9 rounded-xl bg-red-500/30 hover:bg-red-600 border border-red-400/40 backdrop-blur-md text-white flex items-center justify-center transition cursor-pointer"
+            >
+              <Trash2 size={17} />
+            </button>
+          )}
+
           <button
-            className="
-              flex items-center gap-2
-              h-8 px-5 
-              rounded-xl
-              bg-gradient-to-r
-              from-blue-600
-              to-purple-400
-              text-white
-              font-medium
-              shadow-md
-            "
+            onClick={onExportPDF}
+            className="flex items-center gap-2 h-9 px-5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-500 text-white font-medium shadow-md hover:opacity-95 transition cursor-pointer"
           >
             <Download size={18} />
             Export PDF
           </button>
-
         </div>
-
       </div>
-
     </div>
   );
 }

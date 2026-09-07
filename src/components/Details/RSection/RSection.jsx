@@ -1,9 +1,7 @@
-import React from "react";
 import WeatherCard from "./WeatherCard";
 import BudgetCard from "./BudgetCard";
 import TravelTips from "./TravelTips";
 import QuickActions from "./QuickActions";
-import SummaryCard from "./SummaryCard";
 import ExploreMapWeather from "./ExploreMapWeather";
 
 const RSection = () => {
@@ -13,7 +11,6 @@ const RSection = () => {
       <BudgetCard />
       <TravelTips />
       <QuickActions />
-      <SummaryCard />
       <ExploreMapWeather />
     </div>
   );

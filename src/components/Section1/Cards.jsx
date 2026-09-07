@@ -1,5 +1,3 @@
-import React from "react";
-
 const Cards = ({ title, description, imgSrc }) => {
     const Icon = imgSrc;
 

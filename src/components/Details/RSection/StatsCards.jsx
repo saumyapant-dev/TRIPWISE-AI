@@ -9,9 +9,16 @@ const StatsCards = ({
   duration,
   budget,
   city,
+  destination,
   fromDate,
   toDate,
+  travelStyle,
 }) => {
+  const avgPerDay =
+    duration && Number(duration) > 0 && budget
+      ? Math.round(Number(budget) / Number(duration))
+      : 0;
+
   return (
     <div className="grid md:grid-cols-4 gap-4 mt-1">
 
@@ -32,11 +39,11 @@ const StatsCards = ({
             </p>
 
             <h3 className="text-xl font-bold text-gray-900 mt-1">
-              {duration} Days
+              {duration || 7} Days
             </h3>
 
             <p className="text-sm text-gray-500 mt-1">
-              {fromDate} – {toDate}
+              {fromDate && toDate ? `${fromDate} – ${toDate}` : "Flexible Dates"}
             </p>
           </div>
 
@@ -60,11 +67,11 @@ const StatsCards = ({
             </p>
 
             <h3 className="text-xl font-bold text-gray-900 mt-1">
-              ${budget}
+              ${budget || 0}
             </h3>
 
             <p className="text-sm text-gray-500 mt-1">
-              ${Math.round(budget / duration)} / day avg
+              ${avgPerDay} / day avg
             </p>
           </div>
 
@@ -84,22 +91,22 @@ const StatsCards = ({
 
           <div>
             <p className="text-xs uppercase tracking-widest text-gray-500 font-medium">
-              Destinations
+              Destination
             </p>
 
             <h3 className="text-xl font-bold text-gray-900 mt-1">
-              1 City
+              {destination || city || "1 City"}
             </h3>
 
             <p className="text-sm text-gray-500 mt-1">
-              {city}
+              {city ? `Origin: ${city}` : "Selected Destination"}
             </p>
           </div>
 
         </div>
       </div>
 
-      {/* Travelers */}
+      {/* Travel Style */}
       <div className="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm">
         <div className="flex items-start gap-4">
 
@@ -112,15 +119,15 @@ const StatsCards = ({
 
           <div>
             <p className="text-xs uppercase tracking-widest text-gray-500 font-medium">
-              Travelers
+              Travel Style
             </p>
 
             <h3 className="text-xl font-bold text-gray-900 mt-1">
-              2 People
+              {travelStyle || "Explorer"}
             </h3>
 
             <p className="text-sm text-gray-500 mt-1">
-              Adults
+              Personalized Pace
             </p>
           </div>
 

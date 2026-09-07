@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 const Temp = () => {
   return (
     <div className="max-w-5xl mx-auto text-center ">
@@ -18,9 +20,9 @@ const Temp = () => {
       </p>
 
       <div className="flex justify-center gap-6 mt-10">
-        <a href="/generate-trip" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl font-semibold hover:scale-105 transition">
+        <Link to="/generate-trip" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl font-semibold hover:scale-105 transition">
           Generate My Trip
-        </a>
+        </Link>
 
         <a href="#help" className="bg-white border border-gray-200 px-8 py-4 rounded-2xl font-semibold hover:shadow-lg transition">
           See How It Works

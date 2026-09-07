@@ -1,8 +1,11 @@
 import { MapPin, ChevronRight } from "lucide-react";
 
-const ExploreMapWeather = () => {
+const ExploreMapWeather = ({ onClick, destination = "Destination" }) => {
   return (
-    <div className="border border-gray-200 rounded-3xl p-5 shadow-sm hover:shadow-md transition cursor-pointer">
+    <div
+      onClick={onClick}
+      className="border border-gray-200 rounded-3xl p-5 shadow-sm hover:shadow-md transition cursor-pointer bg-white"
+    >
 
       <div className="flex items-center justify-between">
 
@@ -19,12 +22,12 @@ const ExploreMapWeather = () => {
 
           <div>
 
-            <h3 className="text-base font-semibold">
+            <h3 className="text-base font-semibold text-gray-900">
               Explore Map & Weather
             </h3>
 
             <p className="text-gray-500 text-xs">
-              Sunny · 28°C · 5 POIs nearby
+              Interactive map & forecast for {destination}
             </p>
 
           </div>

@@ -26,8 +26,8 @@ const TripHighlights = ({ highlights }) => {
               Flight
             </p>
 
-            <p className="font-semibold">
-              {highlights?.flight}
+            <p className="font-semibold text-sm line-clamp-1">
+              {highlights?.flight || highlights?.flight_info || "Flight options available"}
             </p>
           </div>
 
@@ -36,7 +36,7 @@ const TripHighlights = ({ highlights }) => {
         {/* Hotel */}
         <div className="bg-gray-100 rounded-2xl p-3 flex gap-3">
 
-          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shrink-0">
             <Hotel size={18} />
           </div>
 
@@ -45,8 +45,8 @@ const TripHighlights = ({ highlights }) => {
               Hotel
             </p>
 
-            <p className="font-semibold">
-              {highlights?.hotel}
+            <p className="font-semibold text-sm line-clamp-1">
+              {highlights?.hotel || highlights?.hotel_name || "Recommended boutique stay"}
             </p>
           </div>
 
@@ -55,8 +55,8 @@ const TripHighlights = ({ highlights }) => {
         {/* Attraction */}
         <div className="bg-gray-100 rounded-2xl p-3 flex gap-3">
 
-          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center">
-            <Star size={18} />
+          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shrink-0">
+            <Star size={18} className="text-amber-500" />
           </div>
 
           <div>
@@ -64,8 +64,8 @@ const TripHighlights = ({ highlights }) => {
               Top Rated
             </p>
 
-            <p className="font-semibold">
-              {highlights?.topRated}
+            <p className="font-semibold text-sm line-clamp-1">
+              {highlights?.topRated || highlights?.top_rated || highlights?.attraction || "Iconic City Attractions"}
             </p>
           </div>
 
@@ -76,25 +76,25 @@ const TripHighlights = ({ highlights }) => {
       {/* Bottom Stats */}
       <div className="grid grid-cols-2 gap-3 mt-5">
 
-        <div className=" bg-gradient-to-r from-indigo-100 to-white p-10 rounded-2xl py-3 text-center">
+        <div className="bg-gradient-to-r from-indigo-100 to-white rounded-2xl py-4 px-3 text-center">
 
           <h3 className="text-xl font-bold">
-            {highlights?.activities}
+            {highlights?.activities ?? highlights?.activities_count ?? 12}
           </h3>
 
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-gray-500 mt-0.5">
             Activities
           </p>
 
         </div>
 
-        <div className="bg-gradient-to-l from-indigo-100 to-white p-10 rounded-2xl py-3 text-center">
+        <div className="bg-gradient-to-l from-indigo-100 to-white rounded-2xl py-4 px-3 text-center">
 
           <h3 className="text-xl font-bold">
-            {highlights?.restaurants}
+            {highlights?.restaurants ?? highlights?.restaurants_count ?? 6}
           </h3>
 
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-gray-500 mt-0.5">
             Restaurants
           </p>
 

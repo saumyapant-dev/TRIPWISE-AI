@@ -11,6 +11,7 @@ import {
   Droplets,
   Thermometer,
 } from "lucide-react";
+import { getWeather } from "../../../services/api.js";
 
 function WeatherCard({ destination }) {
 
@@ -101,86 +102,29 @@ function WeatherCard({ destination }) {
   };
 
   useEffect(() => {
-
-    const fetchWeather = async () => {
-
+    const fetchWeatherData = async () => {
       setLoading(true);
-
       try {
-
-        const locationResponse = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${destination}`
-        );
-
-        const locationData = await locationResponse.json();
-
-        if (!locationData.length) return;
-
-        const lat = locationData[0].lat;
-        const lon = locationData[0].lon;
-
-        const weatherResponse = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,weather_code,uv_index&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=7&timezone=auto`
-        );
-
-        const weatherData = await weatherResponse.json();
-
-        console.log(weatherData);
-
-        if (
-          weatherData.error ||
-          !weatherData.current ||
-          !weatherData.daily
-        ) {
+        const response = await getWeather(destination);
+        if (response?.success && response?.data) {
+          setWeather(response.data.current);
+          setForecast(response.data.forecast || []);
+        } else {
           setWeather(null);
           setForecast([]);
-          return;
         }
-
-        setWeather(weatherData.current);
-
-        const days = [
-          "Sun",
-          "Mon",
-          "Tue",
-          "Wed",
-          "Thu",
-          "Fri",
-          "Sat",
-        ];
-
-        const formattedForecast =
-          weatherData.daily.time.map((date, index) => ({
-            day: days[new Date(date).getDay()],
-            high: Math.round(
-              weatherData.daily.temperature_2m_max[index]
-            ),
-            low: Math.round(
-              weatherData.daily.temperature_2m_min[index]
-            ),
-            weatherCode:
-              weatherData.daily.weather_code[index],
-            precipitation:
-              weatherData.daily.precipitation_probability_max[index],
-          }));
-
-        setForecast(formattedForecast);
-
       } catch (err) {
-
-        console.log(err);
-
+        console.warn("Weather API call failed:", err);
+        setWeather(null);
+        setForecast([]);
       } finally {
-
         setLoading(false);
-
       }
     };
 
     if (destination) {
-      fetchWeather();
+      fetchWeatherData();
     }
-
   }, [destination]);
 
   if (loading) {

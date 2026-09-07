@@ -1,20 +1,19 @@
 import {
-  DollarSign,
-} from "lucide-react";
-
-import {
   PieChart,
   Pie,
   Cell,
   ResponsiveContainer,
 } from "recharts";
 
-const BudgetCard = ({ budgetData }) => {
+const BudgetCard = ({ budgetData, targetBudget }) => {
 
   const total = budgetData.reduce(
-    (sum, item) => sum + item.value,
+    (sum, item) => sum + (Number(item.value) || 0),
     0
   );
+
+  const budgetDiff = targetBudget ? Number(targetBudget) - total : null;
+
   return (
     <div className="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm">
 
@@ -29,9 +28,21 @@ const BudgetCard = ({ budgetData }) => {
 
         </div>
 
-        <div className="px-3 hy-2 rounded-full border border-gray-200 text-sm text-gray-500">
-          ↗ 4% under budget
-        </div>
+        {budgetDiff !== null ? (
+          budgetDiff >= 0 ? (
+            <div className="px-3 py-1 rounded-full border border-emerald-200 bg-emerald-50 text-xs font-semibold text-emerald-700">
+              ✓ ${budgetDiff} under budget
+            </div>
+          ) : (
+            <div className="px-3 py-1 rounded-full border border-rose-200 bg-rose-50 text-xs font-semibold text-rose-700">
+              ⚠️ ${Math.abs(budgetDiff)} over target
+            </div>
+          )
+        ) : (
+          <div className="px-3 py-1 rounded-full border border-indigo-100 bg-indigo-50 text-xs font-semibold text-indigo-700">
+            AI Optimized Budget
+          </div>
+        )}
 
       </div>
 
@@ -78,9 +89,9 @@ const BudgetCard = ({ budgetData }) => {
         <div className="space-y-3">
 
           {budgetData.map((item) => {
-            const percentage = Math.round(
-              (item.value / total) * 100
-            );
+            const percentage = total > 0
+              ? Math.round((item.value / total) * 100)
+              : 0;
 
             return (
               <div key={item.name}>

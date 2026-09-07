@@ -56,7 +56,6 @@ const DailySpending = ({
             <YAxis
               axisLine={false}
               tickLine={false}
-              ticks={[0, 200, 400, 600, 800]}
               tick={{
                 fill: "#6b7280",
                 fontSize: 14,
@@ -83,16 +82,15 @@ const DailySpending = ({
               radius={[7, 7, 0, 0]}
               barSize={38}
             >
-              {spendingData.map((entry, index) => (
-                <Cell
-                  key={index}
-                  fill={
-                    index === 6
-                      ? "#2563eb"
-                      : "#dbe4ff"
-                  }
-                />
-              ))}
+              {spendingData.map((entry, index) => {
+                const isHighest = highestDay && entry.day === highestDay.day;
+                return (
+                  <Cell
+                    key={index}
+                    fill={isHighest ? "#2563eb" : "#dbe4ff"}
+                  />
+                );
+              })}
             </Bar>
 
           </BarChart>

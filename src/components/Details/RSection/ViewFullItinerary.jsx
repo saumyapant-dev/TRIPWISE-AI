@@ -1,8 +1,11 @@
 import { CalendarDays, ChevronRight } from "lucide-react";
 
-const ViewFullItinerary = () => {
+const ViewFullItinerary = ({ onClick, duration = 7, activityCount = 15 }) => {
   return (
-    <div className="border border-gray-200 rounded-3xl px-5 py-4 shadow-sm hover:shadow-md transition cursor-pointer">
+    <div
+      onClick={onClick}
+      className="border border-gray-200 rounded-3xl px-5 py-4 shadow-sm hover:shadow-md transition cursor-pointer bg-white"
+    >
 
       <div className="flex items-center justify-between">
 
@@ -16,12 +19,12 @@ const ViewFullItinerary = () => {
           </div>
 
           <div>
-            <h3 className="text-base font-semibold">
+            <h3 className="text-base font-semibold text-gray-900">
               View Full Itinerary
             </h3>
 
             <p className="text-xs text-gray-500">
-              7 days · 23 activities planned
+              {duration} days · {activityCount} activities planned
             </p>
           </div>
 

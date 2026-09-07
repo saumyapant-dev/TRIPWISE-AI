@@ -1,11 +1,16 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+/**
+ * Gemini Service Client Adapter
+ *
+ * NOTE: Direct client-side Gemini AI generation has been migrated to the secure
+ * backend API (/api/trips/generate and /api/chat) to ensure that Google API keys
+ * are NEVER bundled or exposed in the frontend client bundle.
+ */
+import { generateTrip, chatWithAI } from "./api.js";
 
-const genAI = new GoogleGenerativeAI(
-  import.meta.env.VITE_GEMINI_API_KEY
-);
+export const generateItinerary = generateTrip;
+export const askConcierge = chatWithAI;
 
-console.log(import.meta.env.VITE_GEMINI_API_KEY);
-
-export const model = genAI.getGenerativeModel({
-  model: "gemini-2.5-flash",
-});
+export default {
+  generateItinerary,
+  askConcierge,
+};
