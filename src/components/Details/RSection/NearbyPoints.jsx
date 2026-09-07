@@ -10,8 +10,10 @@ import {
   Sparkles,
   MapPin,
   Star,
+  Bookmark,
+  BookmarkCheck,
 } from "lucide-react";
-import { getNearbyPlaces } from "../../../services/api.js";
+import { getNearbyPlaces, savePlace } from "../../../services/api.js";
 
 const CATEGORIES = ["All", "Sightseeing", "Museums", "Parks", "Historic"];
 
@@ -56,6 +58,39 @@ function NearbyPoints({ destination }) {
   const [error, setError] = useState(null);
   const [isRegion, setIsRegion] = useState(false);
   const [activeCategory, setActiveCategory] = useState("All");
+  const [savedIds, setSavedIds] = useState({});
+
+  const handleBookmark = async (e, place, index) => {
+    e.stopPropagation();
+    const key = place.name || index;
+    if (savedIds[key]) return;
+
+    try {
+      let userId = null;
+      let tripId = null;
+      try {
+        const user = JSON.parse(localStorage.getItem("tripwise_user") || "null");
+        userId = user?.id || null;
+        const trip = JSON.parse(localStorage.getItem("tripwise_current_trip") || "null");
+        tripId = trip?.id || null;
+      } catch {
+        // Ignore
+      }
+
+      await savePlace({
+        name: place.name,
+        category: place.type || place.category || "Sightseeing",
+        rating: Number(place.rating) || 4.8,
+        address: `${place.name}, ${destination}`,
+        tripId,
+        userId,
+      });
+
+      setSavedIds((prev) => ({ ...prev, [key]: true }));
+    } catch (err) {
+      console.warn("Could not bookmark nearby place:", err.message);
+    }
+  };
 
   const getIcon = (type = "") => {
     const text = type.toLowerCase();
@@ -337,10 +372,30 @@ function NearbyPoints({ destination }) {
                   </div>
                 </div>
 
-                <ChevronRight
-                  size={16}
-                  className="text-gray-300 group-hover:text-indigo-600 shrink-0 mt-2 transition"
-                />
+                <div className="flex items-center gap-1 shrink-0 mt-2">
+                  <button
+                    type="button"
+                    onClick={(e) => handleBookmark(e, place, index)}
+                    title={savedIds[place.name || index] ? "Saved to bookmarks" : "Bookmark this place"}
+                    aria-label={savedIds[place.name || index] ? "Saved to bookmarks" : "Bookmark this place"}
+                    className={`w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer ${
+                      savedIds[place.name || index]
+                        ? "text-purple-600 bg-purple-50"
+                        : "text-gray-400 hover:text-purple-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    {savedIds[place.name || index] ? (
+                      <BookmarkCheck size={14} />
+                    ) : (
+                      <Bookmark size={14} />
+                    )}
+                  </button>
+
+                  <ChevronRight
+                    size={16}
+                    className="text-gray-300 group-hover:text-indigo-600 transition"
+                  />
+                </div>
               </div>
             );
           })}

@@ -77,7 +77,9 @@ const ChatButton = ({ destination = "your destination", tripData }) => {
               </div>
             </div>
             <button
+              type="button"
               onClick={() => setIsOpen(false)}
+              aria-label="Close chat window"
               className="w-8 h-8 rounded-full hover:bg-white/20 flex items-center justify-center transition cursor-pointer"
             >
               <X size={18} />
@@ -154,6 +156,7 @@ const ChatButton = ({ destination = "your destination", tripData }) => {
             <button
               type="submit"
               disabled={!input.trim() || loading}
+              aria-label="Send message to AI assistant"
               className="w-10 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white flex items-center justify-center transition cursor-pointer shrink-0"
             >
               <Send size={16} />
@@ -169,7 +172,9 @@ const ChatButton = ({ destination = "your destination", tripData }) => {
         )}
 
         <button
+          type="button"
           onClick={() => setIsOpen(!isOpen)}
+          aria-label={isOpen ? "Close AI chat assistant" : "Open AI travel concierge assistant"}
           className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white flex items-center justify-center shadow-xl hover:scale-105 transition cursor-pointer"
         >
           {isOpen ? <X size={26} /> : <MessageCircle size={28} />}

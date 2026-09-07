@@ -3,3 +3,48 @@
 html {
   scroll-behavior: smooth;
 }
+
+@media print {
+  /* Hide interactive controls, floating chat widget, toasts, and buttons */
+  nav,
+  header button,
+  .no-print,
+  button,
+  [role="dialog"],
+  .fixed,
+  .sticky {
+    display: none !important;
+  }
+
+  /* Force background colors and borders in PDF print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    font-size: 12pt !important;
+  }
+
+  /* Avoid awkward card cuts across page breaks */
+  .border,
+  article,
+  section,
+  .rounded-3xl,
+  .rounded-2xl {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    box-shadow: none !important;
+  }
+
+  /* Clean full width container */
+  .max-w-7xl,
+  .max-w-6xl,
+  .max-w-5xl {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}

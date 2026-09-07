@@ -38,11 +38,13 @@ const DailySpending = ({
         Daily Spending
       </h3>
 
-      <div className="h-[180px]">
+      <div className="h-[180px] w-full min-w-0">
 
         <ResponsiveContainer
           width="100%"
           height="100%"
+          minWidth={0}
+          minHeight={180}
         >
           <BarChart
             data={spendingData}

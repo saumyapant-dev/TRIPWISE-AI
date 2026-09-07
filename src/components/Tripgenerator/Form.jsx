@@ -56,7 +56,16 @@ const Form = () => {
     try {
       const targetDestination = destination.trim() || `${travelStyle} Getaway`;
 
+      let userId = null;
+      try {
+        const user = JSON.parse(localStorage.getItem("tripwise_user") || "null");
+        userId = user?.id || null;
+      } catch {
+        // Guest user
+      }
+
       const response = await generateTrip({
+        userId,
         city: city.trim(),
         destination: targetDestination,
         budget: parsedBudget,
@@ -95,10 +104,11 @@ const Form = () => {
 
       <div className="grid md:grid-cols-2 gap-8">
         <div>
-          <label className="block mb-3 font-medium text-gray-700">
+          <label htmlFor="origin-city" className="block mb-3 font-medium text-gray-700">
             📍 Starting City <span className="text-red-500">*</span>
           </label>
           <input
+            id="origin-city"
             type="text"
             value={city}
             onChange={(e) => setCity(e.target.value)}
@@ -108,10 +118,11 @@ const Form = () => {
         </div>
 
         <div>
-          <label className="block mb-3 font-medium text-gray-700">
+          <label htmlFor="trip-destination" className="block mb-3 font-medium text-gray-700">
             📍 Destination (Optional)
           </label>
           <input
+            id="trip-destination"
             type="text"
             value={destination}
             onChange={(e) => setDestination(e.target.value)}
@@ -121,10 +132,11 @@ const Form = () => {
         </div>
 
         <div>
-          <label className="block mb-3 font-medium text-gray-700">
+          <label htmlFor="trip-budget" className="block mb-3 font-medium text-gray-700">
             💰 Budget (USD) <span className="text-red-500">*</span>
           </label>
           <input
+            id="trip-budget"
             type="number"
             value={budget}
             onChange={(e) => setBudget(e.target.value)}
@@ -135,10 +147,11 @@ const Form = () => {
         </div>
 
         <div>
-          <label className="block mb-3 font-medium text-gray-700">
+          <label htmlFor="trip-duration" className="block mb-3 font-medium text-gray-700">
             📅 Trip Duration (Days) <span className="text-red-500">*</span>
           </label>
           <input
+            id="trip-duration"
             type="number"
             value={duration}
             onChange={(e) => setDuration(e.target.value)}
@@ -150,10 +163,11 @@ const Form = () => {
         </div>
 
         <div>
-          <label className="block mb-3 font-medium text-gray-700">
+          <label htmlFor="trip-from-date" className="block mb-3 font-medium text-gray-700">
             📅 Departure Date (Optional)
           </label>
           <input
+            id="trip-from-date"
             type="date"
             value={fromDate}
             onChange={(e) => setFromDate(e.target.value)}
@@ -162,10 +176,11 @@ const Form = () => {
         </div>
 
         <div>
-          <label className="block mb-3 font-medium text-gray-700">
+          <label htmlFor="trip-to-date" className="block mb-3 font-medium text-gray-700">
             📅 Return Date (Optional)
           </label>
           <input
+            id="trip-to-date"
             type="date"
             value={toDate}
             onChange={(e) => setToDate(e.target.value)}
@@ -183,10 +198,19 @@ const Form = () => {
           {styles.map((style) => (
             <div
               key={style.name}
+              role="button"
+              tabIndex={0}
+              aria-pressed={travelStyle === style.name}
               onClick={() => setTravelStyle(style.name)}
-              className={`cursor-pointer border rounded-2xl p-6 text-center transition-all duration-300 ${
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setTravelStyle(style.name);
+                }
+              }}
+              className={`cursor-pointer border rounded-2xl p-6 text-center transition-all duration-300 select-none ${
                 travelStyle === style.name
-                  ? "border-purple-600 bg-purple-50 shadow-md"
+                  ? "border-purple-600 bg-purple-50 shadow-md ring-2 ring-purple-400"
                   : "border-gray-200 hover:border-purple-300"
               }`}
             >
@@ -198,10 +222,11 @@ const Form = () => {
       </div>
 
       <div className="mt-12">
-        <label className="block mb-3 font-medium text-gray-700">
+        <label htmlFor="trip-preferences" className="block mb-3 font-medium text-gray-700">
           Special Preferences (Optional)
         </label>
         <textarea
+          id="trip-preferences"
           rows="5"
           value={preferences}
           onChange={(e) => setPreferences(e.target.value)}

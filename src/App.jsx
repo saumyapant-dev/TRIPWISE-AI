@@ -6,6 +6,7 @@ import Signup from "./pages/Signup";
 import GenerateTrip from "./pages/GenerateTrip";
 import TripDetails from "./pages/TripDetails";
 import Dashboard from "./pages/Dashboard";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/generate-trip" element={<GenerateTrip />} />
         <Route path="/trip-details" element={<TripDetails />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

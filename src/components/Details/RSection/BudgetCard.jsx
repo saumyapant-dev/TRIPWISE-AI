@@ -47,12 +47,12 @@ const BudgetCard = ({ budgetData, targetBudget }) => {
       </div>
 
       {/* Content */}
-      <div className="grid md:grid-cols-[240px_1fr] gap-4 items-center">
+      <div className="grid md:grid-cols-[240px_1fr] gap-4 items-center min-w-0">
 
         {/* Donut Chart */}
-        <div className="h-[180px] relative">
+        <div className="h-[180px] w-full min-w-0 relative">
 
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={180}>
             <PieChart>
               <Pie
                 data={budgetData}

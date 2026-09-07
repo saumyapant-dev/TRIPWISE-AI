@@ -1,8 +1,54 @@
 import { db } from "./database.js";
 import crypto from "node:crypto";
+import { generateFallbackItinerary } from "../services/geminiService.js";
 
 function generateId(prefix = "id") {
   return `${prefix}_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
+}
+
+function insertDaysAndActivities(tripId, destination, days) {
+  const insertDayStmt = db.prepare(`
+    INSERT INTO itinerary_days (id, trip_id, day_number, title)
+    VALUES (?, ?, ?, ?)
+  `);
+
+  const insertActStmt = db.prepare(`
+    INSERT INTO activities (
+      id, day_id, trip_id, time, title, type, location, description,
+      duration, cost, rating, booking_required, best_time, additional_details, ai_recommendation
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  for (let i = 0; i < days.length; i++) {
+    const day = days[i];
+    const dayId = generateId("day");
+    const dayNumber = day.day || i + 1;
+    const dayTitle = day.title || `Day ${dayNumber}`;
+
+    insertDayStmt.run(dayId, tripId, dayNumber, dayTitle);
+
+    const activities = Array.isArray(day.activities) ? day.activities : [];
+    for (const act of activities) {
+      const actId = generateId("act");
+      insertActStmt.run(
+        actId,
+        dayId,
+        tripId,
+        act.time || "09:00 AM",
+        act.title || "Activity",
+        act.type || "Sightseeing",
+        act.location || destination,
+        act.description || "",
+        act.duration || "2 Hours",
+        act.cost || act.estimatedCost || "$20",
+        Number(act.rating) || 4.8,
+        act.bookingRequired ? 1 : 0,
+        act.bestTime || "Morning",
+        act.additionalDetails || act.notes || "",
+        act.aiRecommendation || ""
+      );
+    }
+  }
 }
 
 export const tripsRepo = {
@@ -355,7 +401,7 @@ export const tripsRepo = {
       WHERE id = ?
     `).run(city, destination, budget, duration, fromDate, toDate, travelStyle, preferences, imageUrl, tripId);
 
-    // If budget breakdown was supplied, update it
+    // If budget breakdown was supplied, update it, or recalculate if budget changed
     if (updates.budgetBreakdown) {
       db.prepare(`
         UPDATE budget_breakdown SET
@@ -375,9 +421,69 @@ export const tripsRepo = {
         Number(updates.budgetBreakdown.shopping) || 0,
         tripId
       );
+    } else if (budget !== existing.budget) {
+      db.prepare(`
+        UPDATE budget_breakdown SET
+          flights = ?,
+          hotels = ?,
+          food = ?,
+          transport = ?,
+          activities = ?,
+          shopping = ?
+        WHERE trip_id = ?
+      `).run(
+        Math.round(budget * 0.35),
+        Math.round(budget * 0.30),
+        Math.round(budget * 0.15),
+        Math.round(budget * 0.08),
+        Math.round(budget * 0.07),
+        Math.round(budget * 0.05),
+        tripId
+      );
     }
 
-    console.log(`[DB] Trip ${tripId} updated.`);
+    // Check if days need adjusting
+    const explicitDays = updates.days || updates.tripData?.days;
+    const destinationChanged = destination.toLowerCase().trim() !== existing.destination.toLowerCase().trim();
+    const durationChanged = duration !== existing.duration;
+
+    if (Array.isArray(explicitDays) && explicitDays.length > 0) {
+      db.prepare("DELETE FROM itinerary_days WHERE trip_id = ?").run(tripId);
+      insertDaysAndActivities(tripId, destination, explicitDays);
+    } else if (destinationChanged) {
+      // Re-generate fresh days & activities for the new destination
+      const generated = generateFallbackItinerary(destination, duration, budget, travelStyle);
+      db.prepare("DELETE FROM itinerary_days WHERE trip_id = ?").run(tripId);
+      insertDaysAndActivities(tripId, destination, generated.days);
+
+      // Update highlights and tips for new destination
+      db.prepare(`
+        UPDATE trip_highlights SET
+          activities_count = ?,
+          nearby_places = ?,
+          travel_tips = ?
+        WHERE trip_id = ?
+      `).run(
+        generated.days.length * 4,
+        JSON.stringify(generated.tripHighlights?.nearbyPlaces || []),
+        JSON.stringify(generated.travelTips || []),
+        tripId
+      );
+    } else if (durationChanged) {
+      if (duration < existing.duration) {
+        // Truncate days beyond new duration
+        db.prepare("DELETE FROM itinerary_days WHERE trip_id = ? AND day_number > ?").run(tripId, duration);
+      } else {
+        // Generate additional days for extra duration
+        const generated = generateFallbackItinerary(destination, duration, budget, travelStyle);
+        const extraDays = generated.days.filter((d) => d.day > existing.duration);
+        if (extraDays.length > 0) {
+          insertDaysAndActivities(tripId, destination, extraDays);
+        }
+      }
+    }
+
+    console.log(`[DB] Trip ${tripId} updated with synced days/activities.`);
     return this.getTripById(tripId);
   },
 

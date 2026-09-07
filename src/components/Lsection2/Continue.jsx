@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-const Continue = ({ handleLogin }) => {
+const Continue = ({ handleLogin, loading = false }) => {
     const navigate = useNavigate();
 
     const handleSocialLogin = (provider) => {
@@ -20,9 +20,17 @@ const Continue = ({ handleLogin }) => {
             <button
                 type="button"
                 onClick={handleLogin}
-                className="w-full py-4 rounded-2xl text-white font-semibold bg-gradient-to-r from-blue-500 via-blue-600 to-violet-500 hover:scale-105 transition duration-300 cursor-pointer"
+                disabled={loading}
+                className="w-full py-4 rounded-2xl text-white font-semibold bg-gradient-to-r from-blue-500 via-blue-600 to-violet-500 hover:scale-[1.02] active:scale-[0.98] transition duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-                Log In
+                {loading ? (
+                    <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Signing In...</span>
+                    </>
+                ) : (
+                    "Log In"
+                )}
             </button>
 
             <div className="flex items-center my-8">

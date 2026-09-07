@@ -9,8 +9,10 @@ import {
     Landmark,
     Compass,
     Sparkles,
+    Bookmark,
+    BookmarkCheck,
 } from "lucide-react";
-import { getCuratedPlaces } from "../services/api.js";
+import { getCuratedPlaces, savePlace } from "../services/api.js";
 
 /* -------------------------------------------------------------------------- */
 /*                              Helper Functions                              */
@@ -356,11 +358,47 @@ function CuratedPlaceCard({ place, destination, index = 0 }) {
         setImageLoaded(false);
     }
 
+    const [saved, setSaved] = useState(false);
+    const [saving, setSaving] = useState(false);
+
     const isFood =
         placeType.toLowerCase().includes("restaurant") ||
         placeType.toLowerCase().includes("cafe") ||
         placeType.toLowerCase().includes("bakery") ||
         placeType.toLowerCase().includes("bar");
+
+    const handleSavePlace = async (e) => {
+        e.stopPropagation();
+        if (saved || saving) return;
+        setSaving(true);
+        try {
+            let userId = null;
+            let tripId = null;
+            try {
+                const user = JSON.parse(localStorage.getItem("tripwise_user") || "null");
+                userId = user?.id || null;
+                const trip = JSON.parse(localStorage.getItem("tripwise_current_trip") || "null");
+                tripId = trip?.id || null;
+            } catch {
+                // Ignore parsing errors
+            }
+
+            await savePlace({
+                name: placeName,
+                category: placeType,
+                rating: Number(place.rating) || 4.8,
+                address: place.formattedAddress || `${placeName}, ${destination}`,
+                imageUrl: imgSrc,
+                tripId,
+                userId,
+            });
+            setSaved(true);
+        } catch (err) {
+            console.warn("Could not bookmark place:", err.message);
+        } finally {
+            setSaving(false);
+        }
+    };
 
     const handleImageError = () => {
         if (errorStage === 0) {
@@ -409,6 +447,24 @@ function CuratedPlaceCard({ place, destination, index = 0 }) {
                             {isFood ? <Utensils size={13} /> : <Camera size={13} />}
                             {placeType}
                         </span>
+                    </div>
+
+                    {/* Top Right Bookmark Button */}
+                    <div className="absolute top-4 right-4 z-10">
+                        <button
+                            type="button"
+                            onClick={handleSavePlace}
+                            disabled={saving}
+                            title={saved ? "Place saved to bookmarks" : "Bookmark this place"}
+                            aria-label={saved ? "Place saved" : "Bookmark this place"}
+                            className={`w-9 h-9 rounded-full backdrop-blur-md flex items-center justify-center transition shadow-sm cursor-pointer ${
+                                saved
+                                    ? "bg-purple-600 text-white shadow-purple-500/30"
+                                    : "bg-black/50 text-white hover:bg-black/75 hover:scale-105"
+                            }`}
+                        >
+                            {saved ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
+                        </button>
                     </div>
 
                     {/* Bottom Right Badge */}

@@ -37,17 +37,40 @@ function TripDetails() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
   const [selectedExploreCity, setSelectedExploreCity] = useState(null);
+  const [tripNotFound, setTripNotFound] = useState(false);
+
   const [loadingTrip, setLoadingTrip] = useState(() => {
     const params = new URLSearchParams(window.location.search);
-    return Boolean(params.get("id") && !location.state);
-  });
-
-  // Read initial trip from route state or cached localStorage
-  const [tripState, setTripState] = useState(() => {
-    if (location.state) return location.state;
+    const id = params.get("id");
+    if (!id) return false;
+    if (location.state && location.state.id === id) return false;
     try {
       const cached = localStorage.getItem("tripwise_current_trip");
-      return cached ? JSON.parse(cached) : null;
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed.id === id) return false;
+      }
+    } catch {
+      // Ignore
+    }
+    return true;
+  });
+
+  // Read initial trip from route state or cached localStorage ONLY if ID matches
+  const [tripState, setTripState] = useState(() => {
+    const currentUrlId = new URLSearchParams(window.location.search).get("id");
+    if (location.state && (!currentUrlId || location.state.id === currentUrlId)) {
+      return location.state;
+    }
+    try {
+      const cached = localStorage.getItem("tripwise_current_trip");
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (!currentUrlId || parsed.id === currentUrlId) {
+          return parsed;
+        }
+      }
+      return null;
     } catch {
       return null;
     }
@@ -60,24 +83,38 @@ function TripDetails() {
 
   // Fetch or sync trip by ID from SQLite database
   useEffect(() => {
-    const urlId = searchParams.get("id");
-    const targetId = urlId || tripState?.id;
+    const targetUrlId = searchParams.get("id");
+    const targetId = targetUrlId || tripState?.id;
 
-    if (targetId && !urlId) {
+    if (targetId && !targetUrlId) {
       setSearchParams({ id: targetId }, { replace: true });
     }
 
-    if (targetId) {
+    if (targetUrlId) {
+      // If we already have the matching trip loaded, skip refetch
+      if (tripState && tripState.id === targetUrlId) {
+        return;
+      }
+
       let isMounted = true;
-      getTripById(targetId)
+
+      getTripById(targetUrlId)
         .then((res) => {
           if (isMounted && res && res.success && res.data) {
             setTripState(res.data);
+            setTripNotFound(false);
             localStorage.setItem("tripwise_current_trip", JSON.stringify(res.data));
+          } else if (isMounted) {
+            setTripState(null);
+            setTripNotFound(true);
           }
         })
         .catch((err) => {
-          console.warn("Could not fetch trip from DB, keeping current state:", err.message);
+          console.warn("Could not fetch trip from DB:", err.message);
+          if (isMounted) {
+            setTripState(null);
+            setTripNotFound(true);
+          }
         })
         .finally(() => {
           if (isMounted) {
@@ -89,6 +126,7 @@ function TripDetails() {
         isMounted = false;
       };
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, setSearchParams, tripState?.id]);
 
   // Extract trip details
@@ -255,8 +293,8 @@ function TripDetails() {
     );
   }
 
-  // Graceful Empty State if no trip is loaded
-  if (!parsedTripData && !tripState) {
+  // Graceful Empty State if no trip is loaded or not found
+  if (tripNotFound || (!parsedTripData && !tripState)) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <Tnavbar activeTab={activeTab} setActiveTab={setActiveTab} />

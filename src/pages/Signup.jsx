@@ -48,14 +48,8 @@ function Signup() {
         setError(response?.error || "Registration failed. Please try again.");
       }
     } catch (err) {
-      console.warn("Backend signup error, fallback session:", err.message);
-      const userData = {
-        name: name.trim(),
-        email: email.trim(),
-        registeredAt: new Date().toISOString(),
-      };
-      localStorage.setItem("tripwise_user", JSON.stringify(userData));
-      navigate("/dashboard");
+      console.error("Backend signup error:", err.message);
+      setError(err.message || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }

@@ -239,6 +239,7 @@ function Dashboard() {
                       <button
                         onClick={(e) => handleDeleteTrip(trip.id, e)}
                         title="Delete Trip"
+                        aria-label={`Delete trip to ${trip.destination || "destination"}`}
                         className="w-8 h-8 rounded-full bg-white/80 hover:bg-white text-red-500 flex items-center justify-center shadow transition"
                       >
                         <Trash2 size={15} />
