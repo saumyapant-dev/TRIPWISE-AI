@@ -67,7 +67,7 @@ const Form = () => {
       return;
     }
 
-    // 1. Instant local search from 200+ global & Indian cities dataset
+    // 1. Instant local search from 178 global & Indian cities dataset
     const local = filterDestinations({ search: val.trim() });
     setSuggestions(local.slice(0, 10));
     setShowSuggestions(true);

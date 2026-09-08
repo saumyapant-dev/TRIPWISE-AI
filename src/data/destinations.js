@@ -1,7 +1,7 @@
 /**
  * Comprehensive Global Destinations Dataset
- * Contains 200+ major and medium-sized world destinations mapped to their
- * respective countries, administrative states/regions, and verified GPS coordinates.
+ * Contains 178 curated major and medium-sized destinations across 56 countries mapped to their
+ * respective administrative states/regions and verified GPS coordinates.
  */
 
 export const DESTINATIONS_DATA = [

@@ -98,7 +98,7 @@ export const tripsRepo = {
     }
     tripData = tripData || {};
 
-    const budgetBreakdown = tripData.budgetBreakdown || {
+    const budgetBreakdown = tripData.budgetBreakdown || tripRecord.budgetBreakdown || {
       flights: Math.round(budget * 0.35),
       hotels: Math.round(budget * 0.3),
       food: Math.round(budget * 0.15),
@@ -107,7 +107,7 @@ export const tripsRepo = {
       shopping: Math.round(budget * 0.04),
     };
 
-    const tripHighlights = tripData.tripHighlights || {
+    const tripHighlights = tripData.tripHighlights || tripRecord.tripHighlights || {
       flight: `Flight to ${destination}`,
       hotel: `Boutique Hotel in ${destination}`,
       topRated: `${destination} City Center`,
@@ -116,7 +116,13 @@ export const tripsRepo = {
       nearbyPlaces: [`${destination} Old Town`, `${destination} Waterfront`],
     };
 
-    const days = Array.isArray(tripData.days) ? tripData.days : [];
+    const days = Array.isArray(tripData.days)
+      ? tripData.days
+      : Array.isArray(tripRecord.days)
+      ? tripRecord.days
+      : Array.isArray(tripRecord.itinerary)
+      ? tripRecord.itinerary
+      : [];
 
     // Begin atomic transaction
     db.exec("BEGIN TRANSACTION;");
