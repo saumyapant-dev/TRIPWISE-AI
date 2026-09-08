@@ -1,7 +1,10 @@
 import Cards from "./Cards";
 import { Star, MapPin, Calendar } from "lucide-react";
 
-const QndA = () => {
+/**
+ * Platform Feature Highlights ("Why Choose TripWise AI?")
+ */
+const WhyChooseUs = () => {
     return (
         <section id="features" className="scroll-mt-32">
         <div className="text-center max-w-7xl mx-auto mt-40 px-6">
@@ -41,4 +44,4 @@ const QndA = () => {
     );
 };
 
-export default QndA;
+export default WhyChooseUs;

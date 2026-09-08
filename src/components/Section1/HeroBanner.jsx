@@ -1,6 +1,10 @@
 import { Link } from "react-router-dom";
 
-const Temp = () => {
+/**
+ * Homepage Hero Banner
+ * Features dynamic headline, quick CTAs, and trending destination shortcuts.
+ */
+const HeroBanner = () => {
   const trending = [
     { name: "Tokyo", path: "/generate-trip?destination=Tokyo" },
     { name: "Seoul", path: "/generate-trip?destination=Seoul" },
@@ -59,4 +63,4 @@ const Temp = () => {
   );
 };
 
-export default Temp;
+export default HeroBanner;

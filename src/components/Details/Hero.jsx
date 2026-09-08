@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import {
   MapPin,
   Calendar,
-  Users,
   Heart,
   Share2,
   Download,

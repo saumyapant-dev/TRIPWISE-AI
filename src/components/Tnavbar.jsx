@@ -12,6 +12,10 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
+/**
+ * Trip Navbar
+ * Navigation bar for the Trip Details page with tab switches, currency selector, and action buttons.
+ */
 const Tnavbar = ({
   activeTab,
   setActiveTab,

@@ -1,4 +1,7 @@
-const Ht = () => {
+/**
+ * Trip Generator Header & Description
+ */
+const GeneratorHeader = () => {
     return (
         <div className="pt-5 pb-12 text-center max-w-4xl mx-auto">
 
@@ -16,7 +19,7 @@ const Ht = () => {
             </p>
 
         </div>
-    )
-}
+    );
+};
 
-export default Ht
+export default GeneratorHeader;

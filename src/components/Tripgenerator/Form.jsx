@@ -77,9 +77,9 @@ const Form = () => {
       searchCities(val.trim())
         .then((res) => {
           if (res && res.success && Array.isArray(res.data)) {
-            setSuggestions((prev) => {
+            setSuggestions((current) => {
               const map = new Map();
-              for (const item of local) {
+              for (const item of current) {
                 map.set(`${item.city.toLowerCase()}_${item.country.toLowerCase()}`, item);
               }
               for (const item of res.data) {

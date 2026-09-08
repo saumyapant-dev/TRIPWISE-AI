@@ -99,7 +99,6 @@ const DESTINATION_COVERS = {
   miami: "https://images.unsplash.com/photo-1506953823976-52e1fdc0149a?w=1600&h=800&fit=crop",
   santorini: "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=1600&h=800&fit=crop",
   greece: "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=1600&h=800&fit=crop",
-  athens: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=1600&h=800&fit=crop",
   cairo: "https://images.unsplash.com/photo-1539650116574-8efeb43e2750?w=1600&h=800&fit=crop",
   egypt: "https://images.unsplash.com/photo-1539650116574-8efeb43e2750?w=1600&h=800&fit=crop",
   berlin: "https://images.unsplash.com/photo-1560969184-10fe8719e047?w=1600&h=800&fit=crop",

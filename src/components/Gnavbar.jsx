@@ -1,6 +1,10 @@
 import { ArrowLeft, Plane } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+/**
+ * Generator Navbar
+ * Top navigation bar specifically for the Trip Generator page.
+ */
 const Gnavbar = () => {
   const navigate = useNavigate();
 

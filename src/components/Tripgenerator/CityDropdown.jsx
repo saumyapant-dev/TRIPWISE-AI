@@ -10,7 +10,6 @@ import {
   Loader2,
 } from "lucide-react";
 import {
-  DESTINATIONS_DATA,
   COUNTRIES_LIST,
   filterDestinations,
   findDestinationByCity,
@@ -31,18 +30,18 @@ const CityDropdown = ({
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCountry, setActiveCountry] = useState(selectedCountry || "ALL");
+  const [prevSelectedCountry, setPrevSelectedCountry] = useState(selectedCountry);
   const [remoteResults, setRemoteResults] = useState([]);
   const [isSearchingRemote, setIsSearchingRemote] = useState(false);
 
   const dropdownRef = useRef(null);
   const searchInputRef = useRef(null);
 
-  // Sync active country if selectedCountry changes externally
-  useEffect(() => {
-    if (selectedCountry) {
-      setActiveCountry(selectedCountry);
-    }
-  }, [selectedCountry]);
+  // Sync active country if selectedCountry prop changes externally
+  if (selectedCountry && selectedCountry !== prevSelectedCountry) {
+    setPrevSelectedCountry(selectedCountry);
+    setActiveCountry(selectedCountry);
+  }
 
   // Focus search input when dropdown opens
   useEffect(() => {
@@ -74,26 +73,26 @@ const CityDropdown = ({
   useEffect(() => {
     const query = searchQuery.trim();
     if (query.length < 2) {
-      setRemoteResults([]);
-      setIsSearchingRemote(false);
       return;
     }
 
-    setIsSearchingRemote(true);
-    const timeoutId = setTimeout(async () => {
-      try {
-        const res = await searchCities(query, activeCountry);
-        if (res && res.success && Array.isArray(res.data)) {
-          setRemoteResults(res.data);
-        }
-      } catch {
-        // Retain local matches if remote search fails
-      } finally {
-        setIsSearchingRemote(false);
-      }
+    const timer = setTimeout(() => {
+      setIsSearchingRemote(true);
+      searchCities(query, activeCountry)
+        .then((res) => {
+          if (res && res.success && Array.isArray(res.data)) {
+            setRemoteResults(res.data);
+          }
+        })
+        .catch(() => {
+          // Retain local matches if remote search fails
+        })
+        .finally(() => {
+          setIsSearchingRemote(false);
+        });
     }, 320);
 
-    return () => clearTimeout(timeoutId);
+    return () => clearTimeout(timer);
   }, [searchQuery, activeCountry]);
 
   // Combined and deduplicated list of results
@@ -243,10 +242,17 @@ const CityDropdown = ({
                 ref={searchInputRef}
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setSearchQuery(val);
+                  if (val.trim().length < 2) {
+                    setRemoteResults([]);
+                    setIsSearchingRemote(false);
+                  }
+                }}
                 placeholder={
                   activeCountry === "ALL"
-                    ? "Type any city (e.g. Chandigarh, Gwalior, Athens, Nairobi)..."
+                    ? "Type any city (e.g. Chandigarh, Gwalior, Athens, Paris)..."
                     : `Search cities in ${activeCountry}...`
                 }
                 className="w-full bg-white border border-gray-200 rounded-xl pl-9 pr-14 py-2 text-xs text-gray-800 placeholder-gray-400 outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-200"
@@ -259,7 +265,11 @@ const CityDropdown = ({
                 {searchQuery && (
                   <button
                     type="button"
-                    onClick={() => setSearchQuery("")}
+                    onClick={() => {
+                      setSearchQuery("");
+                      setRemoteResults([]);
+                      setIsSearchingRemote(false);
+                    }}
                     className="text-gray-400 hover:text-gray-600 p-0.5"
                   >
                     <X size={13} />
