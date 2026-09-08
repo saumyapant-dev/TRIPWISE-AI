@@ -11,7 +11,7 @@ const DEFAULT_ATTRACTIONS = (dest) => [
     currentOpeningHours: { openNow: true },
     description: `A quintessential walking district with historic architecture, artisan shops, and vibrant streets in ${dest}.`,
     tags: ["Historic", "Iconic", "Must Visit"],
-    image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1200",
+    image: "https://images.unsplash.com/photo-1546874177-9e664107314e?w=1200",
   },
   {
     name: `${dest} Central Botanical Gardens`,
@@ -71,7 +71,7 @@ const DEFAULT_ATTRACTIONS = (dest) => [
     currentOpeningHours: { openNow: true },
     description: "Monumental historic citadel featuring grand public plazas, fountains, and architectural heritage.",
     tags: ["Landmark", "Architecture", "Historic"],
-    image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1200",
+    image: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200",
   },
 ];
 
@@ -170,8 +170,8 @@ const DISTINCT_ATTRACTION_PHOTOS = [
   "https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=1200", // museum & culture
   "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200", // mountain viewpoint
   "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200", // waterfront & beach
-  "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1200", // iconic architecture
-  "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1200", // historic monument
+  "https://images.unsplash.com/photo-1546874177-9e664107314e?w=1200", // historic architecture & heritage village
+  "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=1200", // dramatic coastal cliff and overlook
   "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?w=1200", // waterfall & river
   "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200", // serene lake & valley
   "https://images.unsplash.com/photo-1582298538104-fe2e74c27f59?w=1200", // heritage garden & estate
@@ -202,6 +202,14 @@ const CURATED_REGIONAL_DINING = {
     { name: "Myeongdong Kyoja Handmade Mandu", type: "Noodles & Dumplings", rating: 4.7, description: "Michelin Bib Gourmand legacy eatery renowned for handmade dumplings and rich chicken broth.", image: "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=1200" },
     { name: "Cha Masineun Tteul (Tea Garden Hanok)", type: "Traditional Tea & Cafe", rating: 4.9, description: "Serene traditional teahouse overlooking Inwangsan mountain with artisan fermented teas.", image: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=1200" },
     { name: "Jungsik Contemporary Korean", type: "Fine Dining", rating: 4.9, description: "Two Michelin-starred pioneer of ultra-innovative contemporary Korean fine dining.", image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1200" },
+  ],
+  busan: [
+    { name: "Jagalchi Live Fish Market Dining Hall", type: "Seafood Market", rating: 4.9, description: "Select fresh flounder, red sea bream, or snow crab on the 1st floor; dine fresh on the 2nd floor.", image: "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=1200" },
+    { name: "Ssangdungi Dwaeji Gukbap", type: "Pork Soup & Rice", rating: 4.8, description: "Busan's famous rich simmered pork bone broth served with tender boiled pork slices and salted shrimp.", image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200" },
+    { name: "Gijang Snow Crab Market House", type: "Crab Feast", rating: 4.9, description: "Steamed giant king crabs and snow crabs cracked tableside and served with crab paste fried rice.", image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=1200" },
+    { name: "Choryang Milmyeon Handmade Noodles", type: "Wheat Noodles", rating: 4.7, description: "Chilled wheat noodles in icy herbal beef broth with dumplings, a post-war Busan classic.", image: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=1200" },
+    { name: "BIFF Square Ssiat Hotteok & Stalls", type: "Street Food", rating: 4.8, description: "Crispy sweet griddle cakes stuffed with brown sugar, cinnamon, and crushed sunflower seeds.", image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=1200" },
+    { name: "The Bay 101 Marine Terrace Lounge", type: "Seaside Lounge", rating: 4.8, description: "Golden fish & chips and craft beer by the yacht marina overlooking the Marine City skyline.", image: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=1200" },
   ],
   kerala: [
     { name: "Grand Pavilion Karimeen Pollichathu", type: "Coastal Kerala", rating: 4.8, description: "Legendary pearl spot fish marinated in freshly ground spices and slow-roasted in banana leaves.", image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200" },
@@ -316,6 +324,33 @@ function resolveCuratedImage(name = "", type = "", destination = "", isRestauran
       return "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=1200";
     if (nm.includes("falls") || nm.includes("waterfall"))
       return "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?w=1200";
+    return DISTINCT_ATTRACTION_PHOTOS[idx % DISTINCT_ATTRACTION_PHOTOS.length];
+  }
+
+  if (dest.includes("busan")) {
+    if (isRestaurant) {
+      const busanFoodImgs = [
+        "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=1200",
+        "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200",
+        "https://images.unsplash.com/photo-1544025162-d76694265947?w=1200",
+        "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=1200",
+        "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=1200",
+        "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=1200",
+      ];
+      return busanFoodImgs[idx % busanFoodImgs.length];
+    }
+    if (nm.includes("gamcheon") || nm.includes("culture village") || nm.includes("huinnyeoul"))
+      return "https://images.unsplash.com/photo-1548115184-bc6544d06a58?w=1200";
+    if (nm.includes("beach") || nm.includes("haeundae") || nm.includes("gwangalli") || nm.includes("songdo"))
+      return "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200";
+    if (nm.includes("temple") || nm.includes("yonggungsa") || nm.includes("beomeosa"))
+      return "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=1200";
+    if (nm.includes("fish") || nm.includes("jagalchi") || nm.includes("market") || nm.includes("biff"))
+      return "https://images.unsplash.com/photo-1583845112239-97ef1341b271?w=1200";
+    if (nm.includes("tower") || nm.includes("diamond") || nm.includes("yongdusan") || typ.includes("viewpoint"))
+      return "https://images.unsplash.com/photo-1578637387939-43c525550085?w=1200";
+    if (nm.includes("cable car") || nm.includes("cliff") || nm.includes("taejongdae"))
+      return "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200";
     return DISTINCT_ATTRACTION_PHOTOS[idx % DISTINCT_ATTRACTION_PHOTOS.length];
   }
 
@@ -434,6 +469,14 @@ const CURATED_REGIONAL_PLACES = {
     { name: "Changdeokgung Palace & Secret Garden", type: "Historic", category: "Historic Landmarks", distance: "2.1 km", rating: 4.9, description: "UNESCO World Heritage palace set harmoniously amidst ancient woodland ponds and trees.", image: "https://images.unsplash.com/photo-1582298538104-fe2e74c27f59?w=1200", coordinates: { lat: 37.5794, lon: 126.9910 } },
     { name: "Dongdaemun Design Plaza (DDP)", type: "Museum", category: "Culture & Museums", distance: "3.2 km", rating: 4.8, description: "Zaha Hadid's neo-futuristic cultural complex hosting premier design exhibitions and rooftop parks.", image: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200", coordinates: { lat: 37.5668, lon: 127.0095 } },
   ],
+  busan: [
+    { name: "Gamcheon Colorful Culture Village", type: "Historic", category: "Historic Landmarks", distance: "3.2 km", rating: 4.9, description: "Vibrant hillside enclave with rainbow cottages, creative murals, and Little Prince overlooks.", image: "https://images.unsplash.com/photo-1548115184-bc6544d06a58?w=1200", coordinates: { lat: 35.0975, lon: 129.0106 } },
+    { name: "Haeundae Beach & Coastal Walk", type: "Sightseeing", category: "Sightseeing", distance: "1.2 km", rating: 4.8, description: "Famous 1.5-km white sand urban beach backed by coastal boardwalks and ocean breeze.", image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200", coordinates: { lat: 35.1587, lon: 129.1604 } },
+    { name: "Haedong Yonggungsa Seaside Temple", type: "Historic", category: "Historic Landmarks", distance: "14 km", rating: 4.9, description: "Rare Buddhist temple situated dramatically along granite sea cliffs above crashing ocean waves.", image: "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=1200", coordinates: { lat: 35.1883, lon: 129.2234 } },
+    { name: "Jagalchi Historic Fish Market", type: "Sightseeing", category: "Sightseeing", distance: "2.1 km", rating: 4.8, description: "Korea's premier seafood marketplace operating on the Nampo harborfront since 1889.", image: "https://images.unsplash.com/photo-1583845112239-97ef1341b271?w=1200", coordinates: { lat: 35.0967, lon: 129.0306 } },
+    { name: "Busan Diamond Tower & Yongdusan Park", type: "Viewpoint", category: "Sightseeing", distance: "1.8 km", rating: 4.7, description: "Elevated 120-meter observation tower with 360-degree vistas across the port and skyline.", image: "https://images.unsplash.com/photo-1578637387939-43c525550085?w=1200", coordinates: { lat: 35.1009, lon: 129.0326 } },
+    { name: "Songdo Marine Cable Car & Skywalk", type: "Attraction", category: "Sightseeing", distance: "5.5 km", rating: 4.8, description: "Scenic glass-bottom aerial gondola crossing 86 meters above Songdo Bay with coastal trails.", image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200", coordinates: { lat: 35.0762, lon: 129.0204 } },
+  ],
   kerala: [
     { name: "Alleppey Backwaters & Houseboat Cruise", type: "Nature", category: "Parks & Nature", distance: "15 km", rating: 4.9, description: "Serene network of interconnected canals, palm-fringed lagoons, and traditional kettuvallam boats.", image: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=1200", coordinates: { lat: 9.4981, lon: 76.3388 } },
     { name: "Munnar Rolling Tea Plantations", type: "Nature", category: "Parks & Nature", distance: "85 km", rating: 4.9, description: "Emerald velvet carpeted hill station surrounded by misty peaks, waterfalls, and tea estates.", image: "https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=1200", coordinates: { lat: 10.0889, lon: 77.0595 } },
@@ -454,7 +497,7 @@ const CURATED_REGIONAL_PLACES = {
     { name: "Everglades National Park", type: "Nature", category: "Parks & Nature", distance: "35 km", rating: 4.8, description: "Vast subtropical wetland ecosystem home to alligators, birds, and guided airboat trails.", image: "https://images.unsplash.com/photo-1506953823976-52e1fdc0149a?w=1200", coordinates: { lat: 25.2866, lon: -80.8987 } },
     { name: "Kennedy Space Center Visitor Complex", type: "Museum", category: "Culture & Museums", distance: "22 km", rating: 4.9, description: "NASA launch pads, historic space shuttles, and interactive astronaut simulators.", image: "https://images.unsplash.com/photo-1517976487502-5f6311681a8f?w=1200", coordinates: { lat: 28.5729, lon: -80.6490 } },
     { name: "Art Deco Historic District, South Beach", type: "Historic", category: "Historic Landmarks", distance: "4.2 km", rating: 4.7, description: "Vibrant pastel 1930s architecture along the world-famous Ocean Drive.", image: "https://images.unsplash.com/photo-1535498730771-e735b998cd64?w=1200", coordinates: { lat: 25.7825, lon: -80.1341 } },
-    { name: "Castillo de San Marcos", type: "Historic", category: "Historic Landmarks", distance: "18 km", rating: 4.8, description: "Oldest masonry fort in the United States, guarding the St. Augustine coastline.", image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1200", coordinates: { lat: 29.8978, lon: -81.3117 } },
+    { name: "Castillo de San Marcos", type: "Historic", category: "Historic Landmarks", distance: "18 km", rating: 4.8, description: "Oldest masonry fort in the United States, guarding the St. Augustine coastline.", image: "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?w=1200", coordinates: { lat: 29.8978, lon: -81.3117 } },
     { name: "Key West Old Town & Mallory Square", type: "Sightseeing", category: "Sightseeing", distance: "45 km", rating: 4.8, description: "Quirky historic streets, Hemingway House, and nightly celebratory sunset festivals.", image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200", coordinates: { lat: 24.5557, lon: -81.7826 } },
     { name: "Wynwood Walls Urban Art Museum", type: "Museum", category: "Culture & Museums", distance: "6.1 km", rating: 4.8, description: "World-class open-air museum showcasing large-scale international street art murals.", image: "https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=1200", coordinates: { lat: 25.8010, lon: -80.1994 } },
   ],
@@ -463,15 +506,15 @@ const CURATED_REGIONAL_PLACES = {
     { name: "Uffizi Gallery", type: "Museum", category: "Culture & Museums", distance: "0.8 km", rating: 4.9, description: "Priceless Renaissance masterpieces including Botticelli, Da Vinci, and Michelangelo.", image: "https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=1200", coordinates: { lat: 43.7678, lon: 11.2553 } },
     { name: "Leaning Tower of Pisa & Piazza dei Miracoli", type: "Landmark", category: "Sightseeing", distance: "24 km", rating: 4.7, description: "Famous freestanding medieval bell tower renowned for its dramatic unintended tilt.", image: "https://images.unsplash.com/photo-1520175480921-4edfa2983e0f?w=1200", coordinates: { lat: 43.7230, lon: 10.3966 } },
     { name: "Piazza del Campo, Siena", type: "Historic", category: "Historic Landmarks", distance: "32 km", rating: 4.8, description: "Shell-shaped medieval public square famous for the historic Palio horse race.", image: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=1200", coordinates: { lat: 43.3184, lon: 11.3316 } },
-    { name: "San Gimignano Medieval Towers", type: "Historic", category: "Historic Landmarks", distance: "28 km", rating: 4.8, description: "Fourteen preserved medieval tower houses crowning the rolling Tuscan hilltops.", image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1200", coordinates: { lat: 43.4674, lon: 11.0433 } },
+    { name: "San Gimignano Medieval Towers", type: "Historic", category: "Historic Landmarks", distance: "28 km", rating: 4.8, description: "Fourteen preserved medieval tower houses crowning the rolling Tuscan hilltops.", image: "https://images.unsplash.com/photo-1543429776-2782fc8e1acd?w=1200", coordinates: { lat: 43.4674, lon: 11.0433 } },
     { name: "Chianti Rolling Vineyards & Castles", type: "Nature", category: "Parks & Nature", distance: "18 km", rating: 4.8, description: "Scenic cypress-lined country roads, olive groves, and historic wine cellars.", image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200", coordinates: { lat: 43.5855, lon: 11.3175 } },
   ],
   rajasthan: [
     { name: "Amber Palace & Fort", type: "Historic", category: "Historic Landmarks", distance: "11 km", rating: 4.8, description: "Majestic hilltop fort featuring red sandstone, marble palaces, and Maota Lake views.", image: "https://images.unsplash.com/photo-1599661046289-e31897846e41?w=1200", coordinates: { lat: 26.9855, lon: 75.8513 } },
     { name: "Hawa Mahal (Palace of Winds)", type: "Historic", category: "Historic Landmarks", distance: "2.5 km", rating: 4.7, description: "Intricate pink sandstone honeycombed facade with 953 carved jharokha windows.", image: "https://images.unsplash.com/photo-1609137144822-4752c0021c3b?w=1200", coordinates: { lat: 26.9239, lon: 75.8267 } },
-    { name: "Mehrangarh Fort, Jodhpur", type: "Historic", category: "Historic Landmarks", distance: "35 km", rating: 4.9, description: "Colossal citadel towering 400 feet above the Blue City with rich museum galleries.", image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1200", coordinates: { lat: 26.2980, lon: 73.0189 } },
+    { name: "Mehrangarh Fort, Jodhpur", type: "Historic", category: "Historic Landmarks", distance: "35 km", rating: 4.9, description: "Colossal citadel towering 400 feet above the Blue City with rich museum galleries.", image: "https://images.unsplash.com/photo-1599661046289-e31897846e41?w=1200", coordinates: { lat: 26.2980, lon: 73.0189 } },
     { name: "City Palace & Lake Pichola, Udaipur", type: "Historic", category: "Historic Landmarks", distance: "42 km", rating: 4.8, description: "Sprawling lakefront royal palace complex blending Rajasthani and Mughal architecture.", image: "https://images.unsplash.com/photo-1582298538104-fe2e74c27f59?w=1200", coordinates: { lat: 24.5764, lon: 73.6835 } },
-    { name: "Jaisalmer Golden Sand Fort", type: "Historic", category: "Historic Landmarks", distance: "65 km", rating: 4.8, description: "Living sandstone fortress rising organically from the golden sands of the Thar Desert.", image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1200", coordinates: { lat: 26.9124, lon: 70.9127 } },
+    { name: "Jaisalmer Golden Sand Fort", type: "Historic", category: "Historic Landmarks", distance: "65 km", rating: 4.8, description: "Living sandstone fortress rising organically from the golden sands of the Thar Desert.", image: "https://images.unsplash.com/photo-1609137144822-4752c0021c3b?w=1200", coordinates: { lat: 26.9124, lon: 70.9127 } },
     { name: "Ranthambore National Park & Tiger Reserve", type: "Nature", category: "Parks & Nature", distance: "80 km", rating: 4.7, description: "Historic ruins reclaimed by wilderness, famous for Bengal tiger safaris.", image: "https://images.unsplash.com/photo-1584810359583-96fc3448beaa?w=1200", coordinates: { lat: 26.0173, lon: 76.5026 } },
   ],
   bali: [
@@ -488,7 +531,7 @@ const CURATED_REGIONAL_PLACES = {
     { name: "Mughal Terraced Gardens (Shalimar & Nishat)", type: "Park", category: "Parks & Nature", distance: "8.5 km", rating: 4.8, description: "17th-century Persian-style terraced garden estate with cascading water channels and chinars.", image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6?w=1200", coordinates: { lat: 34.1486, lon: 74.8722 } },
     { name: "Shankaracharya Ancient Hilltop Temple", type: "Historic", category: "Historic Landmarks", distance: "4.1 km", rating: 4.8, description: "Ancient 9th-century stone temple perched high on Gopadari Hill overlooking Srinagar.", image: "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=1200", coordinates: { lat: 34.0761, lon: 74.8428 } },
     { name: "Betaab Valley & Lidder River, Pahalgam", type: "Nature", category: "Parks & Nature", distance: "88 km", rating: 4.9, description: "Lush alpine valley framed by snow-covered Himalayan peaks and gushing glacial streams.", image: "https://images.unsplash.com/photo-1566837945700-30057527ade0?w=1200", coordinates: { lat: 34.0206, lon: 75.3267 } },
-    { name: "Pari Mahal (Palace of Fairies)", type: "Historic", category: "Historic Landmarks", distance: "6.2 km", rating: 4.7, description: "Six-terraced Mughal garden observatory built by Prince Dara Shikoh above Dal Lake.", image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1200", coordinates: { lat: 34.0883, lon: 74.8789 } },
+    { name: "Pari Mahal (Palace of Fairies)", type: "Historic", category: "Historic Landmarks", distance: "6.2 km", rating: 4.7, description: "Six-terraced Mughal garden observatory built by Prince Dara Shikoh above Dal Lake.", image: "https://images.unsplash.com/photo-1595815771614-ade9d652a65d?w=1200", coordinates: { lat: 34.0883, lon: 74.8789 } },
   ],
   assam: [
     { name: "Kaziranga National Park Rhino Safari", type: "Nature", category: "Parks & Nature", distance: "190 km", rating: 4.9, description: "UNESCO World Heritage sanctuary home to two-thirds of the world's great one-horned rhinos.", image: "https://images.unsplash.com/photo-1575550959106-5a7defe28b56?w=1200", coordinates: { lat: 26.5775, lon: 93.1711 } },
@@ -504,7 +547,7 @@ const CURATED_REGIONAL_PLACES = {
     { name: "The Getty Center Museum & Gardens", type: "Museum", category: "Culture & Museums", distance: "18 km", rating: 4.9, description: "Modernist travertine museum complex housing European art and tranquil hill gardens.", image: "https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=1200", coordinates: { lat: 34.0780, lon: -118.4741 } },
     { name: "Hollywood Boulevard & Walk of Fame", type: "Sightseeing", category: "Sightseeing", distance: "6.2 km", rating: 4.6, description: "World-famous cinema boulevard commemorating entertainment legends and TLC Chinese Theatre.", image: "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=1200", coordinates: { lat: 34.1016, lon: -118.3268 } },
     { name: "Venice Beach Boardwalk & Canals", type: "Sightseeing", category: "Sightseeing", distance: "17 km", rating: 4.7, description: "Bohemian seaside promenade dotted with street murals, skaters, and historic European canals.", image: "https://images.unsplash.com/photo-1506953823976-52e1fdc0149a?w=1200", coordinates: { lat: 33.9850, lon: -118.4695 } },
-    { name: "Universal Studios Hollywood", type: "Attraction", category: "Sightseeing", distance: "12 km", rating: 4.8, description: "Legendary working movie studio and theme park featuring immersive cinematic worlds.", image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1200", coordinates: { lat: 34.1381, lon: -118.3534 } },
+    { name: "Universal Studios Hollywood", type: "Attraction", category: "Sightseeing", distance: "12 km", rating: 4.8, description: "Legendary working movie studio and theme park featuring immersive cinematic worlds.", image: "https://images.unsplash.com/photo-1580655653885-65763b2597d0?w=1200", coordinates: { lat: 34.1381, lon: -118.3534 } },
   ],
   kyoto: [
     { name: "Fushimi Inari Taisha", type: "Historic", category: "Historic Landmarks", distance: "3.5 km", rating: 4.9, description: "Thousands of brilliant vermilion torii gates winding up sacred Mount Inari.", image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1200", coordinates: { lat: 34.9671, lon: 135.7727 } },
@@ -512,7 +555,7 @@ const CURATED_REGIONAL_PLACES = {
     { name: "Arashiyama Bamboo Grove", type: "Nature", category: "Parks & Nature", distance: "7.8 km", rating: 4.8, description: "Soaring emerald bamboo stems swaying in the breeze near the historic Moon Crossing Bridge.", image: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=1200", coordinates: { lat: 35.0169, lon: 135.6713 } },
     { name: "Kiyomizu-dera Cliffside Temple", type: "Historic", category: "Historic Landmarks", distance: "2.1 km", rating: 4.9, description: "Massive wooden stage offering panoramic Kyoto views without using a single nail.", image: "https://images.unsplash.com/photo-1528127269322-539801943592?w=1200", coordinates: { lat: 34.9949, lon: 135.7850 } },
     { name: "Gion Geisha District & Shirakawa Canal", type: "Historic", category: "Historic Landmarks", distance: "1.2 km", rating: 4.8, description: "Atmospheric preserved wooden merchant houses, lantern-lit alleys, and teahouses.", image: "https://images.unsplash.com/photo-1582298538104-fe2e74c27f59?w=1200", coordinates: { lat: 35.0037, lon: 135.7772 } },
-    { name: "Nijo Castle & Nightingale Floors", type: "Historic", category: "Historic Landmarks", distance: "2.8 km", rating: 4.7, description: "Tokugawa Shogunate fortress famous for ornate painted screens and squeaking floors.", image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1200", coordinates: { lat: 35.0142, lon: 135.7482 } },
+    { name: "Nijo Castle & Nightingale Floors", type: "Historic", category: "Historic Landmarks", distance: "2.8 km", rating: 4.7, description: "Tokugawa Shogunate fortress famous for ornate painted screens and squeaking floors.", image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1200", coordinates: { lat: 35.0142, lon: 135.7482 } },
   ],
   tokyo: [
     { name: "Senso-ji Temple, Asakusa", type: "Historic", category: "Historic Landmarks", distance: "4.5 km", rating: 4.8, description: "Tokyo's oldest Buddhist temple fronted by the vibrant Nakamise shopping arcade.", image: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=1200", coordinates: { lat: 35.7148, lon: 139.7967 } },
@@ -520,20 +563,20 @@ const CURATED_REGIONAL_PLACES = {
     { name: "Tokyo Skytree Observation Deck", type: "Viewpoint", category: "Sightseeing", distance: "6.2 km", rating: 4.7, description: "World's tallest freestanding broadcast tower providing 360-degree city panoramas.", image: "https://images.unsplash.com/photo-1578637387939-43c525550085?w=1200", coordinates: { lat: 35.7101, lon: 139.8107 } },
     { name: "Shinjuku Gyoen National Garden", type: "Park", category: "Parks & Nature", distance: "2.4 km", rating: 4.8, description: "Expansive landscape blending Japanese traditional, English, and French formal gardens.", image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6?w=1200", coordinates: { lat: 35.6852, lon: 139.7101 } },
     { name: "teamLab Planets Digital Art Museum", type: "Museum", category: "Culture & Museums", distance: "5.9 km", rating: 4.9, description: "Immersive barefoot digital art installations interacting with water and light.", image: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200", coordinates: { lat: 35.6491, lon: 139.7898 } },
-    { name: "Shibuya Sky & Scramble Crossing", type: "Viewpoint", category: "Sightseeing", distance: "3.2 km", rating: 4.8, description: "Rooftop 360-degree open-air observatory overlooking the world's busiest crosswalk.", image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1200", coordinates: { lat: 35.6595, lon: 139.7006 } },
+    { name: "Shibuya Sky & Scramble Crossing", type: "Viewpoint", category: "Sightseeing", distance: "3.2 km", rating: 4.8, description: "Rooftop 360-degree open-air observatory overlooking the world's busiest crosswalk.", image: "https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=1200", coordinates: { lat: 35.6595, lon: 139.7006 } },
   ],
   paris: [
     { name: "Eiffel Tower & Champ de Mars", type: "Landmark", category: "Sightseeing", distance: "3.8 km", rating: 4.8, description: "Gustave Eiffel's world-renowned iron lattice tower illuminating the Parisian skyline.", image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1200", coordinates: { lat: 48.8584, lon: 2.2945 } },
     { name: "Louvre Museum & Pyramide", type: "Museum", category: "Culture & Museums", distance: "1.2 km", rating: 4.9, description: "World's most visited art museum housing the Mona Lisa and Venus de Milo.", image: "https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=1200", coordinates: { lat: 48.8606, lon: 2.3376 } },
     { name: "Musée d'Orsay", type: "Museum", category: "Culture & Museums", distance: "1.8 km", rating: 4.9, description: "Spectacular former Beaux-Arts railway station exhibiting premier Impressionist art.", image: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200", coordinates: { lat: 48.8599, lon: 2.3266 } },
-    { name: "Arc de Triomphe & Champs-Élysées", type: "Historic", category: "Historic Landmarks", distance: "4.2 km", rating: 4.7, description: "Monumental arch honoring French military victories at the head of the avenue.", image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1200", coordinates: { lat: 48.8738, lon: 2.2950 } },
+    { name: "Arc de Triomphe & Champs-Élysées", type: "Historic", category: "Historic Landmarks", distance: "4.2 km", rating: 4.7, description: "Monumental arch honoring French military victories at the head of the avenue.", image: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200", coordinates: { lat: 48.8738, lon: 2.2950 } },
     { name: "Sainte-Chapelle Stained Glass", type: "Historic", category: "Historic Landmarks", distance: "0.9 km", rating: 4.9, description: "Rayonnant Gothic royal chapel containing 1,113 luminous 13th-century stained glass panes.", image: "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=1200", coordinates: { lat: 48.8554, lon: 2.3450 } },
     { name: "Jardin du Luxembourg", type: "Park", category: "Parks & Nature", distance: "1.5 km", rating: 4.8, description: "Stately 25-hectare French formal gardens with tree-lined promenades and Medici Fountain.", image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6?w=1200", coordinates: { lat: 48.8462, lon: 2.3372 } },
   ],
   "new york": [
     { name: "Central Park & Belvedere Castle", type: "Park", category: "Parks & Nature", distance: "2.5 km", rating: 4.9, description: "World's most famous urban park spanning 843 acres of lakes, rambles, and lawns.", image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6?w=1200", coordinates: { lat: 40.7829, lon: -73.9654 } },
     { name: "The Metropolitan Museum of Art (The Met)", type: "Museum", category: "Culture & Museums", distance: "3.1 km", rating: 4.9, description: "Encyclopedic collection of over 2 million works spanning 5,000 years of global culture.", image: "https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=1200", coordinates: { lat: 40.7794, lon: -73.9632 } },
-    { name: "Statue of Liberty & Ellis Island", type: "Historic", category: "Historic Landmarks", distance: "6.8 km", rating: 4.8, description: "Colossal neoclassical sculpture welcoming immigrants into New York Harbor.", image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1200", coordinates: { lat: 40.6892, lon: -74.0445 } },
+    { name: "Statue of Liberty & Ellis Island", type: "Historic", category: "Historic Landmarks", distance: "6.8 km", rating: 4.8, description: "Colossal neoclassical sculpture welcoming immigrants into New York Harbor.", image: "https://images.unsplash.com/photo-1499092346589-b9b6be3e94b2?w=1200", coordinates: { lat: 40.6892, lon: -74.0445 } },
     { name: "The High Line Elevated Park", type: "Park", category: "Parks & Nature", distance: "1.8 km", rating: 4.8, description: "Linear park built on a historic elevated freight rail line above Manhattan's West Side.", image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200", coordinates: { lat: 40.7480, lon: -74.0048 } },
     { name: "Top of the Rock Observation Deck", type: "Viewpoint", category: "Sightseeing", distance: "1.2 km", rating: 4.8, description: "Unrivaled panoramic views of Central Park and the Empire State Building skyline.", image: "https://images.unsplash.com/photo-1578637387939-43c525550085?w=1200", coordinates: { lat: 40.7587, lon: -73.9787 } },
     { name: "Brooklyn Bridge Promenade Walk", type: "Landmark", category: "Sightseeing", distance: "4.4 km", rating: 4.8, description: "Iconic stone-and-steel suspension bridge offering memorable harbor skyline strolls.", image: "https://images.unsplash.com/photo-1499092346589-b9b6be3e94b2?w=1200", coordinates: { lat: 40.7061, lon: -73.9969 } },

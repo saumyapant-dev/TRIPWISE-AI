@@ -25,6 +25,42 @@ import InteractiveMap from "../components/Details/Explore/InteractiveMap";
 import CuratedTrips from "../components/CuratedTrips";
 import { getTripById, saveTrip, updateTrip, deleteTrip } from "../services/api.js";
 import { getDestinationCover } from "../services/unsplash.js";
+import { findDestinationByCity } from "../data/destinations.js";
+
+const CURRENCY_RATES = {
+  USD: { symbol: "$", rate: 1 },
+  EUR: { symbol: "€", rate: 0.92 },
+  GBP: { symbol: "£", rate: 0.79 },
+  INR: { symbol: "₹", rate: 86.5 },
+  JPY: { symbol: "¥", rate: 152.0 },
+};
+
+const ALTERNATIVE_ACTIVITIES = [
+  {
+    activityTitle: "Artisan Coffee & Hidden Alleys Walk",
+    description: "Stroll through historic winding passages, boutique coffee shops, and craft studios.",
+    cost: "$15 - $25",
+    tags: ["Culture", "Relaxation", "Scenic"],
+  },
+  {
+    activityTitle: "Local Heritage & Architecture Tour",
+    description: "Explore renowned landmarks and stunning architectural details with regional insights.",
+    cost: "$20 - $35",
+    tags: ["History", "Architecture", "Sightseeing"],
+  },
+  {
+    activityTitle: "Sunset Viewpoint & Photography Spot",
+    description: "Capture golden hour panoramic views of the city skyline and landscape.",
+    cost: "Free",
+    tags: ["Photography", "Nature", "Sunset"],
+  },
+  {
+    activityTitle: "Night Market Street Food Tasting",
+    description: "Sample beloved regional snacks, savory bites, and sweet pastries.",
+    cost: "$10 - $25",
+    tags: ["Foodie", "Nightlife", "Local"],
+  },
+];
 
 function TripDetails() {
   const location = useLocation();
@@ -32,6 +68,8 @@ function TripDetails() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [activeTab, setActiveTab] = useState("overview");
+  const [currency, setCurrency] = useState("USD");
+  const [focusedMapCoords, setFocusedMapCoords] = useState(null);
   const [toast, setToast] = useState(null);
   const [isSaved, setIsSaved] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -134,6 +172,8 @@ function TripDetails() {
     id: tripId,
     city = "Origin",
     destination = "Your Destination",
+    country = "",
+    coordinates = null,
     budget = 2000,
     duration = 7,
     imageUrl = "",
@@ -141,8 +181,32 @@ function TripDetails() {
     fromDate = "",
     toDate = "",
     travelStyle = "Explorer",
-    preferences = "",
+    preferences = [],
   } = tripState || {};
+
+  // Normalize multi-preferences into a guaranteed array of strings
+  let parsedPreferences = [];
+  if (Array.isArray(preferences) && preferences.length > 0) {
+    parsedPreferences = preferences;
+  } else if (typeof preferences === "string" && preferences.trim()) {
+    const trimmed = preferences.trim();
+    if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+      try {
+        parsedPreferences = JSON.parse(trimmed);
+      } catch {
+        parsedPreferences = [trimmed];
+      }
+    } else if (trimmed.includes(",")) {
+      parsedPreferences = trimmed.split(",").map((p) => p.trim()).filter(Boolean);
+    } else {
+      parsedPreferences = [trimmed];
+    }
+  } else if (travelStyle) {
+    parsedPreferences = String(travelStyle).split(",").map((p) => p.trim()).filter(Boolean);
+  }
+  if (!Array.isArray(parsedPreferences) || parsedPreferences.length === 0) {
+    parsedPreferences = ["Culture", "City Exploration"];
+  }
 
   // Dynamically resolve destination cover if imageUrl is empty or airport suitcase fallback
   const resolvedImageUrl = getDestinationCover(destination, imageUrl);
@@ -164,28 +228,42 @@ function TripDetails() {
   // Edit form state
   const [editForm, setEditForm] = useState({
     destination,
+    country,
+    coordinates,
     city,
     budget,
     duration,
     fromDate,
     toDate,
-    travelStyle,
-    preferences,
+    preferences: parsedPreferences,
+    notes: "",
   });
 
   // Open edit modal and prefill current values
   const handleOpenEditModal = () => {
     setEditForm({
       destination,
+      country,
+      coordinates,
       city,
       budget,
       duration,
       fromDate,
       toDate,
-      travelStyle,
-      preferences,
+      preferences: parsedPreferences,
+      notes: "",
     });
     setIsEditModalOpen(true);
+  };
+
+  const handleToggleEditPreference = (prefName) => {
+    setEditForm((prev) => {
+      const current = Array.isArray(prev.preferences) ? prev.preferences : [];
+      const updated = current.includes(prefName)
+        ? current.filter((p) => p !== prefName)
+        : [...current, prefName];
+      return { ...prev, preferences: updated };
+    });
   };
 
   // Submit edit to backend SQLite database
@@ -198,6 +276,13 @@ function TripDetails() {
 
     setEditLoading(true);
     try {
+      const matched = findDestinationByCity(editForm.destination);
+      const effectiveCountry = matched ? matched.country : (editForm.country || country || "");
+      const effectiveCoords = matched ? matched.coordinates : (editForm.coordinates || coordinates || null);
+      const effectivePrefs = Array.isArray(editForm.preferences) && editForm.preferences.length > 0
+        ? editForm.preferences
+        : parsedPreferences;
+
       const targetImage =
         editForm.destination !== destination
           ? getDestinationCover(editForm.destination)
@@ -205,13 +290,15 @@ function TripDetails() {
 
       const response = await updateTrip(tripId, {
         destination: editForm.destination,
+        country: effectiveCountry,
+        coordinates: effectiveCoords,
         city: editForm.city,
         budget: Number(editForm.budget),
         duration: Number(editForm.duration),
         fromDate: editForm.fromDate,
         toDate: editForm.toDate,
-        travelStyle: editForm.travelStyle,
-        preferences: editForm.preferences,
+        travelStyle: effectivePrefs.join(", "),
+        preferences: effectivePrefs,
         imageUrl: targetImage,
       });
 
@@ -280,6 +367,94 @@ function TripDetails() {
 
   const handleExportPDF = () => {
     window.print();
+  };
+
+  const handleDeleteActivity = (dayIndex, activityIndex) => {
+    if (!parsedTripData || !parsedTripData.days) return;
+    const newDays = [...parsedTripData.days];
+    const targetDay = { ...newDays[dayIndex] };
+    if (!targetDay.activities) return;
+    const removed = targetDay.activities[activityIndex];
+    targetDay.activities = targetDay.activities.filter((_, idx) => idx !== activityIndex);
+    newDays[dayIndex] = targetDay;
+    const updatedTripData = { ...parsedTripData, days: newDays };
+    const updatedTripState = { ...tripState, tripData: updatedTripData };
+    setTripState(updatedTripState);
+    localStorage.setItem("tripwise_current_trip", JSON.stringify(updatedTripState));
+    if (tripId) {
+      updateTrip(tripId, { tripData: updatedTripData }).catch((e) => console.warn(e));
+    }
+    showToast(`Removed "${removed?.activityTitle || 'Activity'}" from Day ${dayIndex + 1}`);
+  };
+
+  const handleSwapActivity = (dayIndex, activityIndex) => {
+    if (!parsedTripData || !parsedTripData.days) return;
+    const newDays = [...parsedTripData.days];
+    const targetDay = { ...newDays[dayIndex] };
+    if (!targetDay.activities) return;
+
+    const currentActivity = targetDay.activities[activityIndex];
+    const altIndex = (dayIndex * 3 + activityIndex + 1) % ALTERNATIVE_ACTIVITIES.length;
+    const randomAlt = ALTERNATIVE_ACTIVITIES[altIndex];
+
+    const swapped = {
+      ...currentActivity,
+      activityTitle: `${randomAlt.activityTitle} in ${destination}`,
+      description: randomAlt.description,
+      cost: randomAlt.cost,
+      tags: randomAlt.tags,
+    };
+
+    targetDay.activities = targetDay.activities.map((act, idx) => idx === activityIndex ? swapped : act);
+    newDays[dayIndex] = targetDay;
+    const updatedTripData = { ...parsedTripData, days: newDays };
+    const updatedTripState = { ...tripState, tripData: updatedTripData };
+    setTripState(updatedTripState);
+    localStorage.setItem("tripwise_current_trip", JSON.stringify(updatedTripState));
+    if (tripId) {
+      updateTrip(tripId, { tripData: updatedTripData }).catch((e) => console.warn(e));
+    }
+    showToast(`Swapped with: "${swapped.activityTitle}"!`);
+  };
+
+  const handleAddCuratedPlace = (place, targetDayNumber = 1) => {
+    if (!parsedTripData || !parsedTripData.days) return;
+    const dayIndex = Math.max(0, Math.min(Number(targetDayNumber) - 1, parsedTripData.days.length - 1));
+    const newDays = [...parsedTripData.days];
+    const targetDay = { ...newDays[dayIndex] };
+
+    const placeName = place?.displayName?.text || place?.name || "Curated Attraction";
+    const newActivity = {
+      time: "03:30 PM - 05:30 PM",
+      activityTitle: placeName,
+      description: place?.description || `Explore and experience ${placeName} in ${destination}.`,
+      cost: "$15 - $30",
+      tags: [place?.primaryTypeDisplayName?.text || place?.type || "Attraction", "Curated", "Featured"],
+      location: place?.formattedAddress || destination,
+    };
+
+    targetDay.activities = [...(targetDay.activities || []), newActivity];
+    newDays[dayIndex] = targetDay;
+    const updatedTripData = { ...parsedTripData, days: newDays };
+    const updatedTripState = { ...tripState, tripData: updatedTripData };
+    setTripState(updatedTripState);
+    localStorage.setItem("tripwise_current_trip", JSON.stringify(updatedTripState));
+    if (tripId) {
+      updateTrip(tripId, { tripData: updatedTripData }).catch((e) => console.warn(e));
+    }
+    showToast(`Added "${placeName}" to Day ${dayIndex + 1}!`);
+  };
+
+  const handleViewOnMap = (place) => {
+    if (place?.coordinates && !isNaN(place.coordinates.lat) && !isNaN(place.coordinates.lon)) {
+      setFocusedMapCoords([place.coordinates.lat, place.coordinates.lon]);
+    } else if (place?.location && typeof place.location.latitude === "number") {
+      setFocusedMapCoords([place.location.latitude, place.location.longitude]);
+    }
+    const mapElement = document.getElementById("interactive-map-section");
+    if (mapElement) {
+      mapElement.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
   };
 
   // Loading state when fetching by ID
@@ -381,8 +556,46 @@ function TripDetails() {
       0
     ) || 15;
 
+  const curRate = CURRENCY_RATES[currency] || CURRENCY_RATES.USD;
+
+  const convertedBudgetData = budgetData.map((item) => ({
+    ...item,
+    value: Math.round((Number(item.value) || 0) * curRate.rate),
+  }));
+
+  const convertedBudget = Math.round((Number(budget) || 0) * curRate.rate);
+
+  const convertedSpendingData = spendingData.map((item) => ({
+    ...item,
+    amount: Math.round((Number(item.amount) || 0) * curRate.rate),
+  }));
+
+  const convertedHighestDay = highestDay
+    ? {
+        ...highestDay,
+        amount: Math.round((Number(highestDay.amount) || 0) * curRate.rate),
+      }
+    : { day: "Day 1", amount: 0 };
+
   return (
     <div className="bg-gray-50 min-h-screen">
+      {/* Print-specific layout optimization */}
+      <style>{`
+        @media print {
+          nav, header, button, .no-print, [title="Edit trip parameters"], [title="Share"], [title="Save trip"] {
+            display: none !important;
+          }
+          body, .min-h-screen, .bg-gray-50 {
+            background: white !important;
+            color: black !important;
+          }
+          .shadow-sm, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl {
+            box-shadow: none !important;
+            border: 1px solid #e5e7eb !important;
+          }
+        }
+      `}</style>
+
       {/* Toast Feedback */}
       {toast && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white px-6 py-3 rounded-2xl shadow-xl flex items-center gap-2 text-sm animate-in fade-in slide-in-from-top-4">
@@ -399,16 +612,20 @@ function TripDetails() {
         onExportPDF={handleExportPDF}
         onEdit={handleOpenEditModal}
         isSaved={isSaved}
+        currency={currency}
+        setCurrency={setCurrency}
       />
 
       {activeTab === "overview" && (
         <Hero
           city={city}
           destination={destination}
+          country={country}
           budget={budget}
           duration={duration}
           imageUrl={resolvedImageUrl}
           travelStyle={travelStyle}
+          preferences={parsedPreferences}
           onSave={handleSaveTrip}
           onShare={handleShare}
           onExportPDF={handleExportPDF}
@@ -422,12 +639,15 @@ function TripDetails() {
         {activeTab === "overview" && (
           <StatsCards
             duration={duration}
-            budget={budget}
+            budget={convertedBudget}
             city={city}
             destination={destination}
+            country={country}
             fromDate={fromDate}
             toDate={toDate}
             travelStyle={travelStyle}
+            preferences={parsedPreferences}
+            currencySymbol={curRate.symbol}
           />
         )}
 
@@ -438,10 +658,15 @@ function TripDetails() {
           <>
             <div className="grid lg:grid-cols-[1.7fr_0.9fr] gap-6 mb-8 items-start">
               <div className="space-y-6">
-                <BudgetCard budgetData={budgetData} targetBudget={budget} />
+                <BudgetCard
+                  budgetData={convertedBudgetData}
+                  targetBudget={convertedBudget}
+                  currencySymbol={curRate.symbol}
+                />
                 <DailySpending
-                  spendingData={spendingData}
-                  highestDay={highestDay}
+                  spendingData={convertedSpendingData}
+                  highestDay={convertedHighestDay}
+                  currencySymbol={curRate.symbol}
                 />
               </div>
 
@@ -479,6 +704,9 @@ function TripDetails() {
               destination={destination}
               fromDate={fromDate}
               toDate={toDate}
+              onDeleteActivity={handleDeleteActivity}
+              onSwapActivity={handleSwapActivity}
+              currency={currency}
             />
           </div>
         )}
@@ -527,8 +755,12 @@ function TripDetails() {
 
             <div className="grid lg:grid-cols-[2fr_1fr] gap-6 items-start">
               {/* LEFT SIDE */}
-              <div className="space-y-6">
-                <InteractiveMap destination={selectedExploreCity || destination} />
+              <div id="interactive-map-section" className="space-y-6">
+                <InteractiveMap
+                  destination={selectedExploreCity || destination}
+                  focusedCoords={focusedMapCoords}
+                  initialCoords={coordinates && coordinates.lat && coordinates.lon ? [coordinates.lat, coordinates.lon] : null}
+                />
                 <NearbyPoints destination={selectedExploreCity || destination} />
               </div>
 
@@ -536,7 +768,12 @@ function TripDetails() {
               <WeatherCard destination={selectedExploreCity || destination} />
             </div>
 
-            <CuratedTrips destination={selectedExploreCity || destination} />
+            <CuratedTrips
+              destination={selectedExploreCity || destination}
+              onAddToItinerary={handleAddCuratedPlace}
+              onViewOnMap={handleViewOnMap}
+              duration={duration}
+            />
           </div>
         )}
       </div>
@@ -648,12 +885,46 @@ function TripDetails() {
 
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1.5 uppercase tracking-wide">
-                  Preferences & Notes
+                  Travel Preferences (Multi-Select)
+                </label>
+                <div className="flex flex-wrap gap-1.5 mb-3">
+                  {[
+                    "City Exploration",
+                    "Adventure",
+                    "Cuisine",
+                    "Culture",
+                    "Nature",
+                    "Relaxation",
+                    "Shopping",
+                    "History",
+                    "Beaches",
+                    "Nightlife",
+                  ].map((pref) => {
+                    const isSelected = Array.isArray(editForm.preferences) && editForm.preferences.includes(pref);
+                    return (
+                      <button
+                        key={pref}
+                        type="button"
+                        onClick={() => handleToggleEditPreference(pref)}
+                        className={`px-3 py-1 rounded-full text-xs font-medium border transition cursor-pointer ${
+                          isSelected
+                            ? "bg-purple-600 text-white border-purple-600 shadow-xs"
+                            : "bg-gray-50 text-gray-700 border-gray-200 hover:border-purple-300"
+                        }`}
+                      >
+                        {pref} {isSelected && "✓"}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5 uppercase tracking-wide">
+                  Additional Notes
                 </label>
                 <textarea
-                  rows="3"
-                  value={editForm.preferences}
-                  onChange={(e) => setEditForm({ ...editForm, preferences: e.target.value })}
+                  rows="2"
+                  value={editForm.notes}
+                  onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
                   placeholder="Notes, must-see places, dietary preferences..."
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-purple-600 focus:ring-2 focus:ring-purple-100 outline-none resize-none"
                 />

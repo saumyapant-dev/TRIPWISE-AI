@@ -10,14 +10,21 @@ const StatsCards = ({
   budget,
   city,
   destination,
+  country,
   fromDate,
   toDate,
   travelStyle,
+  preferences,
+  currencySymbol = "$",
 }) => {
   const avgPerDay =
     duration && Number(duration) > 0 && budget
       ? Math.round(Number(budget) / Number(duration))
       : 0;
+
+  const prefList = Array.isArray(preferences) && preferences.length > 0
+    ? preferences
+    : (travelStyle ? String(travelStyle).split(",").map((p) => p.trim()).filter(Boolean) : ["Explorer"]);
 
   return (
     <div className="grid md:grid-cols-4 gap-4 mt-1">
@@ -67,11 +74,11 @@ const StatsCards = ({
             </p>
 
             <h3 className="text-xl font-bold text-gray-900 mt-1">
-              ${budget || 0}
+              {currencySymbol}{Number(budget || 0).toLocaleString()}
             </h3>
 
             <p className="text-sm text-gray-500 mt-1">
-              ${avgPerDay} / day avg
+              {currencySymbol}{avgPerDay.toLocaleString()} / day avg
             </p>
           </div>
 
@@ -95,39 +102,50 @@ const StatsCards = ({
             </p>
 
             <h3 className="text-xl font-bold text-gray-900 mt-1">
-              {destination || city || "1 City"}
+              {destination || "Destination"}
             </h3>
 
             <p className="text-sm text-gray-500 mt-1">
-              {city ? `Origin: ${city}` : "Selected Destination"}
+              {country ? country : (city ? `Origin: ${city}` : "Verified Destination")}
             </p>
           </div>
 
         </div>
       </div>
 
-      {/* Travel Style */}
+      {/* Travel Focus / Preferences */}
       <div className="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm">
         <div className="flex items-start gap-4">
 
-          <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center">
+          <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
             <Users
               size={19}
-              className="text-gray-600"
             />
           </div>
 
-          <div>
+          <div className="min-w-0">
             <p className="text-xs uppercase tracking-widest text-gray-500 font-medium">
-              Travel Style
+              Travel Focus
             </p>
 
-            <h3 className="text-xl font-bold text-gray-900 mt-1">
-              {travelStyle || "Explorer"}
-            </h3>
+            <div className="flex flex-wrap gap-1 mt-1.5">
+              {prefList.slice(0, 2).map((p) => (
+                <span
+                  key={p}
+                  className="px-2 py-0.5 rounded-md bg-purple-50 border border-purple-200 text-purple-800 text-[11px] font-semibold truncate"
+                >
+                  {p}
+                </span>
+              ))}
+              {prefList.length > 2 && (
+                <span className="text-[11px] text-gray-400 font-medium self-center">
+                  +{prefList.length - 2} more
+                </span>
+              )}
+            </div>
 
-            <p className="text-sm text-gray-500 mt-1">
-              Personalized Pace
+            <p className="text-xs text-gray-400 mt-1">
+              {prefList.length} Preferences Selected
             </p>
           </div>
 

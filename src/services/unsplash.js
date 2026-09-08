@@ -13,10 +13,12 @@
  */
 
 const GENERIC_AIRPORT_IMAGE = "photo-1488646953014-85cb44e25828";
+const GENERIC_DEFAULT_VAN = "photo-1469854523086-cc02fe5d8800";
 
 const DESTINATION_COVERS = {
   seoul: "https://images.unsplash.com/photo-1538485399081-7191377e8241?w=1600&h=800&fit=crop",
   korea: "https://images.unsplash.com/photo-1538485399081-7191377e8241?w=1600&h=800&fit=crop",
+  busan: "https://images.unsplash.com/photo-1548115184-bc6544d06a58?w=1600&h=800&fit=crop",
   kerala: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=1600&h=800&fit=crop",
   alleppey: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=1600&h=800&fit=crop",
   kochi: "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?w=1600&h=800&fit=crop",
@@ -26,6 +28,32 @@ const DESTINATION_COVERS = {
   srinagar: "https://images.unsplash.com/photo-1595815771614-ade9d652a65d?w=1600&h=800&fit=crop",
   gulmarg: "https://images.unsplash.com/photo-1548013146-72479768bada?w=1600&h=800&fit=crop",
   pahalgam: "https://images.unsplash.com/photo-1566837945700-30057527ade0?w=1600&h=800&fit=crop",
+  chandigarh: "https://images.unsplash.com/photo-1595846519845-68e298c2edd8?w=1600&h=800&fit=crop",
+  gwalior: "https://images.unsplash.com/photo-1609137144822-094157155734?w=1600&h=800&fit=crop",
+  bhopal: "https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?w=1600&h=800&fit=crop",
+  indore: "https://images.unsplash.com/photo-1627894483216-2138af692e32?w=1600&h=800&fit=crop",
+  lucknow: "https://images.unsplash.com/photo-1598890777032-bde835ba27c2?w=1600&h=800&fit=crop",
+  kanpur: "https://images.unsplash.com/photo-1588416936097-41850ab3d86d?w=1600&h=800&fit=crop",
+  amritsar: "https://images.unsplash.com/photo-1588096344356-9a4f61f7480a?w=1600&h=800&fit=crop",
+  udaipur: "https://images.unsplash.com/photo-1615836245337-f5b9b2303f10?w=1600&h=800&fit=crop",
+  jodhpur: "https://images.unsplash.com/photo-1589308078059-be1415eab4c3?w=1600&h=800&fit=crop",
+  varanasi: "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=1600&h=800&fit=crop",
+  hyderabad: "https://images.unsplash.com/photo-1605649487212-47bdab064df8?w=1600&h=800&fit=crop",
+  bengaluru: "https://images.unsplash.com/photo-1596176530529-78163a4f7af2?w=1600&h=800&fit=crop",
+  bangalore: "https://images.unsplash.com/photo-1596176530529-78163a4f7af2?w=1600&h=800&fit=crop",
+  mysuru: "https://images.unsplash.com/photo-1600100397608-f010f4439c29?w=1600&h=800&fit=crop",
+  chennai: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=1600&h=800&fit=crop",
+  ooty: "https://images.unsplash.com/photo-1589182373726-e4f658ab50f0?w=1600&h=800&fit=crop",
+  kolkata: "https://images.unsplash.com/photo-1558431382-27e303142255?w=1600&h=800&fit=crop",
+  darjeeling: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=1600&h=800&fit=crop",
+  pune: "https://images.unsplash.com/photo-1579618218290-24a26f63a728?w=1600&h=800&fit=crop",
+  ahmedabad: "https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?w=1600&h=800&fit=crop",
+  rishikesh: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=1600&h=800&fit=crop",
+  dharamshala: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=1600&h=800&fit=crop",
+  manali: "https://images.unsplash.com/photo-1605649487212-47bdab064df8?w=1600&h=800&fit=crop",
+  shimla: "https://images.unsplash.com/photo-1588416936097-41850ab3d86d?w=1600&h=800&fit=crop",
+  athens: "https://images.unsplash.com/photo-1571401835393-8c5f35328320?w=1600&h=800&fit=crop",
+  nairobi: "https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?w=1600&h=800&fit=crop",
   assam: "https://images.unsplash.com/photo-1615880484746-a134be9a6ecf?w=1600&h=800&fit=crop",
   guwahati: "https://images.unsplash.com/photo-1615880484746-a134be9a6ecf?w=1600&h=800&fit=crop",
   kaziranga: "https://images.unsplash.com/photo-1575550959106-5a7defe28b56?w=1600&h=800&fit=crop",
@@ -40,7 +68,7 @@ const DESTINATION_COVERS = {
   "new york": "https://images.unsplash.com/photo-1499092346589-b9b6be3e94b2?w=1600&h=800&fit=crop",
   manhattan: "https://images.unsplash.com/photo-1499092346589-b9b6be3e94b2?w=1600&h=800&fit=crop",
   london: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1600&h=800&fit=crop",
-  uk: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1600&h=800&fit=crop",
+  "united kingdom": "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1600&h=800&fit=crop",
   rome: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=1600&h=800&fit=crop",
   italy: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=1600&h=800&fit=crop",
   barcelona: "https://images.unsplash.com/photo-1583422409516-2895a77efded?w=1600&h=800&fit=crop",
@@ -94,12 +122,17 @@ export const getDestinationCover = (destination, customImage = "") => {
     return customImage &&
       typeof customImage === "string" &&
       customImage.startsWith("http") &&
-      !customImage.includes(GENERIC_AIRPORT_IMAGE)
+      !customImage.includes(GENERIC_AIRPORT_IMAGE) &&
+      !customImage.includes(GENERIC_DEFAULT_VAN)
       ? customImage
       : "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1600&h=800&fit=crop";
   }
 
-  const clean = destination.toLowerCase().trim();
+  const clean = destination
+    .trim()
+    .replace(/\b(trip|vacation|tour|getaway|holiday|itinerary|journey)\b/gi, "")
+    .trim()
+    .toLowerCase();
 
   // 1. Direct key match
   if (DESTINATION_COVERS[clean]) {
@@ -108,22 +141,23 @@ export const getDestinationCover = (destination, customImage = "") => {
 
   // 2. Substring match against known world destinations
   for (const [key, url] of Object.entries(DESTINATION_COVERS)) {
-    if (clean.includes(key) || key.includes(clean)) {
+    if (clean.includes(key) || (key.includes(clean) && clean.length >= 4)) {
       return url;
     }
   }
 
-  // 3. If a valid custom image exists and is NOT the generic airport suitcase
+  // 3. If a valid custom image exists and is NOT the generic camper van or airport suitcase
   if (
     customImage &&
     typeof customImage === "string" &&
     customImage.startsWith("http") &&
-    !customImage.includes(GENERIC_AIRPORT_IMAGE)
+    !customImage.includes(GENERIC_AIRPORT_IMAGE) &&
+    !customImage.includes(GENERIC_DEFAULT_VAN)
   ) {
     return customImage;
   }
 
-  // 3. Keyword-based thematic fallback
+  // 4. Keyword-based thematic fallback
   if (clean.includes("beach") || clean.includes("coast") || clean.includes("island") || clean.includes("sea")) {
     return "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&h=800&fit=crop";
   }
@@ -137,7 +171,7 @@ export const getDestinationCover = (destination, customImage = "") => {
     return "https://images.unsplash.com/photo-1441974231531-c6227db76b6?w=1600&h=800&fit=crop";
   }
 
-  // 4. Default high-aesthetic world wanderlust banner
+  // 5. Default high-aesthetic world wanderlust banner
   return "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1600&h=800&fit=crop";
 };
 

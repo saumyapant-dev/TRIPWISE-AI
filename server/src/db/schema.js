@@ -17,6 +17,8 @@ export function initSchema() {
       user_id TEXT,
       city TEXT NOT NULL,
       destination TEXT NOT NULL,
+      country TEXT,
+      coordinates TEXT,
       budget REAL NOT NULL,
       duration INTEGER NOT NULL,
       from_date TEXT,
@@ -113,6 +115,18 @@ export function initSchema() {
   // Migration check for existing DB files
   try {
     db.exec("ALTER TABLE trip_highlights ADD COLUMN travel_tips TEXT;");
+  } catch {
+    // Column already exists
+  }
+
+  try {
+    db.exec("ALTER TABLE trips ADD COLUMN country TEXT;");
+  } catch {
+    // Column already exists
+  }
+
+  try {
+    db.exec("ALTER TABLE trips ADD COLUMN coordinates TEXT;");
   } catch {
     // Column already exists
   }

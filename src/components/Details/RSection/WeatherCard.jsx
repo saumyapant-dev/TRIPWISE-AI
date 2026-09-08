@@ -10,6 +10,8 @@ import {
   Wind,
   Droplets,
   Thermometer,
+  Luggage,
+  Sparkles,
 } from "lucide-react";
 import { getWeather } from "../../../services/api.js";
 
@@ -395,6 +397,53 @@ function WeatherCard({ destination }) {
           )}
 
         </div>
+
+        {/* Smart Packing Advisory */}
+        {weather && (() => {
+          const temp = weather.temperature_2m;
+          const code = weather.weather_code;
+          const isRain = rainyDay || [51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code);
+          const isSnow = [71, 73, 75, 77, 85, 86].includes(code);
+
+          let attire = "Lightweight comfortable clothing & sneakers";
+          if (isSnow || temp < 8) {
+            attire = "Heavy thermal jacket, beanie & insulated boots";
+          } else if (temp < 18) {
+            attire = "Light layers, windbreaker & walking shoes";
+          } else if (temp > 28) {
+            attire = "Breathable fabrics, sunhat & sunglasses";
+          }
+
+          const items = [];
+          if (isRain) items.push("Compact umbrella", "Waterproof shoes");
+          if (weather.uv_index >= 5) items.push("SPF 50+ Sunscreen");
+          if (temp > 25) items.push("Electrolyte water bottle");
+          if (temp < 16) items.push("Warm scarf / fleece");
+          if (items.length === 0) items.push("Sunglasses", "Daypack");
+
+          return (
+            <div className="mt-4 bg-indigo-50/70 border border-indigo-100 rounded-2xl p-4">
+              <div className="flex items-center gap-2 mb-1.5 text-indigo-900 font-bold text-xs uppercase tracking-wide">
+                <Luggage size={14} className="text-indigo-600" />
+                <span>Smart Packing Advisory</span>
+              </div>
+              <p className="text-xs text-indigo-950 font-medium">
+                {attire}
+              </p>
+              <div className="flex flex-wrap gap-1.5 mt-2.5">
+                {items.map((item, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center gap-1 bg-white border border-indigo-200 text-indigo-700 text-[11px] font-semibold px-2.5 py-0.5 rounded-full shadow-2xs"
+                  >
+                    <Sparkles size={10} className="text-indigo-500" />
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
       </div>
 

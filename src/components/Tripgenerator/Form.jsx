@@ -1,26 +1,40 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AlertCircle, Sparkles } from "lucide-react";
-import { generateTrip } from "../../services/api.js";
+import { generateTrip, searchCities } from "../../services/api.js";
+import { filterDestinations, findDestinationByCity } from "../../data/destinations.js";
 
 const Form = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // All fields are strictly empty by default - no hardcoded defaults
   const [city, setCity] = useState("");
   const [destination, setDestination] = useState(() => {
     const params = new URLSearchParams(location.search || window.location.search);
     return params.get("destination") || "";
   });
+  const [selectedDestinationData, setSelectedDestinationData] = useState(() => {
+    const params = new URLSearchParams(location.search || window.location.search);
+    const qDest = params.get("destination");
+    return qDest ? findDestinationByCity(qDest) : null;
+  });
+
   const [budget, setBudget] = useState("");
   const [duration, setDuration] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  const [travelStyle, setTravelStyle] = useState("");
+  const [selectedStyles, setSelectedStyles] = useState([]);
   const [preferences, setPreferences] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorBanner, setErrorBanner] = useState(null);
 
+  // Autocomplete suggestions state
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const destinationRef = useRef(null);
+
+  // Original 6 travel style cards
   const styles = [
     { name: "Beach & Relaxation", icon: "🏖️" },
     { name: "Adventure", icon: "⛰️" },
@@ -30,11 +44,103 @@ const Form = () => {
     { name: "Wildlife", icon: "🦁" },
   ];
 
+  // Close destination suggestions on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (destinationRef.current && !destinationRef.current.contains(e.target)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Handle destination typing with instant local search and debounced worldwide search
+  const handleDestinationChange = (val) => {
+    setDestination(val);
+    setErrorBanner(null);
+
+    if (!val.trim()) {
+      setSuggestions([]);
+      setSelectedDestinationData(null);
+      setShowSuggestions(false);
+      return;
+    }
+
+    // 1. Instant local search from 200+ global & Indian cities dataset
+    const local = filterDestinations({ search: val.trim() });
+    setSuggestions(local.slice(0, 10));
+    setShowSuggestions(true);
+
+    // 2. Concurrently query backend for worldwide geocoded cities
+    if (val.trim().length >= 2) {
+      searchCities(val.trim())
+        .then((res) => {
+          if (res && res.success && Array.isArray(res.data)) {
+            setSuggestions((prev) => {
+              const map = new Map();
+              for (const item of local) {
+                map.set(`${item.city.toLowerCase()}_${item.country.toLowerCase()}`, item);
+              }
+              for (const item of res.data) {
+                const key = `${item.city.toLowerCase()}_${item.country.toLowerCase()}`;
+                if (!map.has(key)) map.set(key, item);
+              }
+              return Array.from(map.values()).slice(0, 12);
+            });
+          }
+        })
+        .catch(() => {
+          // Retain local matches if remote search fails
+        });
+    }
+  };
+
+  const handleSelectDestination = (item) => {
+    setDestination(`${item.city}, ${item.country}`);
+    setSelectedDestinationData(item);
+    setShowSuggestions(false);
+    setErrorBanner(null);
+  };
+
+  // Toggle travel style card selection
+  const handleToggleStyle = (styleName) => {
+    setSelectedStyles((prev) => {
+      if (prev.includes(styleName)) {
+        return prev.filter((s) => s !== styleName);
+      } else {
+        return [...prev, styleName];
+      }
+    });
+    setErrorBanner(null);
+  };
+
   const handleGenerateTrip = async () => {
     setErrorBanner(null);
 
-    if (!city.trim() || !budget || !duration || !travelStyle) {
-      setErrorBanner("Please fill in all mandatory fields: Starting City, Budget, Duration, and Travel Style.");
+    // Form Validation: ensure all required fields are provided
+    if (!city.trim()) {
+      setErrorBanner("Please enter a Starting City.");
+      return;
+    }
+
+    if (!destination.trim()) {
+      setErrorBanner("Please enter or select a Destination.");
+      return;
+    }
+
+    if (!budget || !budget.trim()) {
+      setErrorBanner("Please enter a Total Budget.");
+      return;
+    }
+
+    if (!duration || !duration.trim()) {
+      setErrorBanner("Please enter a Trip Duration.");
+      return;
+    }
+
+    if (selectedStyles.length === 0) {
+      setErrorBanner("Please select at least one Travel Style.");
       return;
     }
 
@@ -54,7 +160,23 @@ const Form = () => {
     setLoading(true);
 
     try {
-      const targetDestination = destination.trim() || `${travelStyle} Getaway`;
+      let targetDestination = destination.trim();
+      let destCountry = selectedDestinationData?.country || "";
+      let destRegion = selectedDestinationData?.region || "";
+      let destCoords = selectedDestinationData?.coordinates || null;
+
+      // If user typed city name directly without clicking a suggestion, resolve it
+      if (!destCoords || !destCountry) {
+        const match = findDestinationByCity(targetDestination);
+        if (match) {
+          destCountry = match.country;
+          destRegion = match.region || "";
+          destCoords = match.coordinates;
+          if (!targetDestination.includes(",")) {
+            targetDestination = `${match.city}, ${match.country}`;
+          }
+        }
+      }
 
       let userId = null;
       try {
@@ -64,16 +186,21 @@ const Form = () => {
         // Guest user
       }
 
+      const travelStyleStr = selectedStyles.join(", ");
+
       const response = await generateTrip({
         userId,
         city: city.trim(),
         destination: targetDestination,
+        country: destCountry,
+        region: destRegion,
+        coordinates: destCoords,
         budget: parsedBudget,
         duration: parsedDuration,
         fromDate,
         toDate,
-        travelStyle,
-        preferences: preferences.trim(),
+        travelStyle: travelStyleStr,
+        preferences: preferences.trim() ? [preferences.trim(), ...selectedStyles] : selectedStyles,
       });
 
       if (response && response.success && response.data) {
@@ -111,24 +238,61 @@ const Form = () => {
             id="origin-city"
             type="text"
             value={city}
-            onChange={(e) => setCity(e.target.value)}
+            onChange={(e) => {
+              setCity(e.target.value);
+              setErrorBanner(null);
+            }}
             placeholder="San Francisco, USA"
             className="w-full border border-gray-200 rounded-2xl px-5 py-4 outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
           />
         </div>
 
-        <div>
+        <div className="relative" ref={destinationRef}>
           <label htmlFor="trip-destination" className="block mb-3 font-medium text-gray-700">
-            📍 Destination (Optional)
+            📍 Destination <span className="text-red-500">*</span>
           </label>
           <input
             id="trip-destination"
             type="text"
             value={destination}
-            onChange={(e) => setDestination(e.target.value)}
+            onChange={(e) => handleDestinationChange(e.target.value)}
+            onFocus={() => {
+              if (destination.trim()) setShowSuggestions(true);
+            }}
             placeholder="Let AI surprise me!"
+            autoComplete="off"
             className="w-full border border-gray-200 rounded-2xl px-5 py-4 outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
           />
+
+          {/* Search Suggestions Floating Dropdown */}
+          {showSuggestions && suggestions.length > 0 && (
+            <div className="absolute z-50 left-0 right-0 top-full mt-2 bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden max-h-64 overflow-y-auto">
+              {suggestions.map((item) => (
+                <div
+                  key={`${item.city}-${item.region || ""}-${item.country}`}
+                  onMouseDown={() => handleSelectDestination(item)}
+                  className="px-5 py-3 text-sm hover:bg-purple-50 cursor-pointer flex items-center justify-between border-b border-gray-50 last:border-0 transition"
+                >
+                  <div className="truncate">
+                    <span className="font-semibold text-gray-900">{item.city}</span>
+                    {item.region && (
+                      <span className="text-gray-500 text-xs ml-1.5 font-normal">
+                        ({item.region})
+                      </span>
+                    )}
+                    <span className="text-gray-400 text-xs ml-1.5">
+                      • {item.country}
+                    </span>
+                  </div>
+                  {item.coordinates && (
+                    <span className="text-[11px] text-gray-400 shrink-0 ml-2">
+                      {item.coordinates.lat.toFixed(1)}°, {item.coordinates.lon.toFixed(1)}°
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div>
@@ -139,7 +303,10 @@ const Form = () => {
             id="trip-budget"
             type="number"
             value={budget}
-            onChange={(e) => setBudget(e.target.value)}
+            onChange={(e) => {
+              setBudget(e.target.value);
+              setErrorBanner(null);
+            }}
             placeholder="2000"
             min="100"
             className="w-full border border-gray-200 rounded-2xl px-5 py-4 outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
@@ -154,7 +321,10 @@ const Form = () => {
             id="trip-duration"
             type="number"
             value={duration}
-            onChange={(e) => setDuration(e.target.value)}
+            onChange={(e) => {
+              setDuration(e.target.value);
+              setErrorBanner(null);
+            }}
             placeholder="7"
             min="1"
             max="30"
@@ -195,29 +365,32 @@ const Form = () => {
         </h3>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-          {styles.map((style) => (
-            <div
-              key={style.name}
-              role="button"
-              tabIndex={0}
-              aria-pressed={travelStyle === style.name}
-              onClick={() => setTravelStyle(style.name)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  setTravelStyle(style.name);
-                }
-              }}
-              className={`cursor-pointer border rounded-2xl p-6 text-center transition-all duration-300 select-none ${
-                travelStyle === style.name
-                  ? "border-purple-600 bg-purple-50 shadow-md ring-2 ring-purple-400"
-                  : "border-gray-200 hover:border-purple-300"
-              }`}
-            >
-              <div className="text-3xl mb-2">{style.icon}</div>
-              <p className="font-medium">{style.name}</p>
-            </div>
-          ))}
+          {styles.map((style) => {
+            const isSelected = selectedStyles.includes(style.name);
+            return (
+              <div
+                key={style.name}
+                role="button"
+                tabIndex={0}
+                aria-pressed={isSelected}
+                onClick={() => handleToggleStyle(style.name)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleToggleStyle(style.name);
+                  }
+                }}
+                className={`cursor-pointer border rounded-2xl p-6 text-center transition-all duration-300 select-none ${
+                  isSelected
+                    ? "border-purple-600 bg-purple-50 shadow-md ring-2 ring-purple-400"
+                    : "border-gray-200 hover:border-purple-300"
+                }`}
+              >
+                <div className="text-3xl mb-2">{style.icon}</div>
+                <p className="font-medium">{style.name}</p>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -238,7 +411,7 @@ const Form = () => {
       <button
         onClick={handleGenerateTrip}
         disabled={loading}
-        className="block mt-10 w-full py-5 rounded-2xl text-white font-semibold text-lg bg-gradient-to-r from-blue-600 to-purple-600 text-center transition duration-300 ease-in-out hover:scale-[1.02] disabled:opacity-60 cursor-pointer shadow-lg"
+        className="block mt-10 w-full py-5 rounded-2xl text-white font-semibold text-lg bg-gradient-to-r from-blue-600 to-purple-600 text-center transition duration-300 ease-in-out hover:scale-105 disabled:opacity-60 cursor-pointer shadow-lg"
       >
         {loading ? (
           <span className="flex items-center justify-center gap-2">

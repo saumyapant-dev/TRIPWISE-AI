@@ -15,6 +15,33 @@ const QUICK_COORDS = {
   seoul: [37.5665, 126.978],
   "south korea": [37.5665, 126.978],
   kerala: [9.9312, 76.2673],
+  chandigarh: [30.7333, 76.7794],
+  gwalior: [26.2183, 78.1828],
+  bhopal: [23.2599, 77.4126],
+  indore: [22.7196, 75.8577],
+  lucknow: [26.8467, 80.9462],
+  kanpur: [26.4499, 80.3319],
+  amritsar: [31.634, 74.8723],
+  udaipur: [24.5854, 73.7125],
+  jodhpur: [26.2389, 73.0243],
+  varanasi: [25.3176, 82.9739],
+  hyderabad: [17.385, 78.4867],
+  bengaluru: [12.9716, 77.5946],
+  bangalore: [12.9716, 77.5946],
+  mysuru: [12.2958, 76.6394],
+  chennai: [13.0827, 80.2707],
+  ooty: [11.4102, 76.695],
+  kolkata: [22.5726, 88.3639],
+  darjeeling: [27.041, 88.2663],
+  pune: [18.5204, 73.8567],
+  ahmedabad: [23.0225, 72.5714],
+  surat: [21.1702, 72.8311],
+  rishikesh: [30.0869, 78.2676],
+  dharamshala: [32.219, 76.3234],
+  manali: [32.2432, 77.1892],
+  shimla: [31.1048, 77.1734],
+  athens: [37.9838, 23.7275],
+  nairobi: [-1.2921, 36.8219],
   kochi: [9.9312, 76.2673],
   cochin: [9.9312, 76.2673],
   alleppey: [9.4981, 76.3388],
@@ -115,19 +142,19 @@ const createAttractionIcon = (index, category) => {
 };
 
 // Component that dynamically pans and centers the map whenever the center coordinates change
-function ChangeMapCenter({ center }) {
+function ChangeMapCenter({ center, zoom = 12 }) {
   const map = useMap();
 
   useEffect(() => {
     if (center && Array.isArray(center) && center.length === 2 && !isNaN(center[0]) && !isNaN(center[1])) {
-      map.setView(center, 12, { animate: true });
+      map.setView(center, zoom, { animate: true });
     }
-  }, [center, map]);
+  }, [center, zoom, map]);
 
   return null;
 }
 
-function InteractiveMap({ destination }) {
+function InteractiveMap({ destination, focusedCoords, initialCoords }) {
   const fastCoords = useMemo(() => getQuickCoords(destination), [destination]);
   const [serverCenter, setServerCenter] = useState(null);
   const [resolvedName, setResolvedName] = useState("");
@@ -135,8 +162,12 @@ function InteractiveMap({ destination }) {
   const [loading, setLoading] = useState(false);
   const [coordsUnavailable, setCoordsUnavailable] = useState(false);
 
-  // Active center prefers server-verified geocode coords, then fastCoords dictionary, or default
-  const center = serverCenter || fastCoords || [37.5665, 126.978];
+  // Active center prefers explicitly focused coords, then initialCoords, then server geocode, then fast dictionary
+  const center = (focusedCoords && Array.isArray(focusedCoords) && focusedCoords.length === 2)
+    ? focusedCoords
+    : (initialCoords && Array.isArray(initialCoords) && initialCoords.length === 2 && !isNaN(initialCoords[0]))
+    ? initialCoords
+    : (serverCenter || fastCoords || [20.5937, 78.9629]);
 
   useEffect(() => {
     let isMounted = true;
@@ -249,12 +280,13 @@ function InteractiveMap({ destination }) {
             width: "100%",
           }}
         >
-          <ChangeMapCenter center={center} />
+          <ChangeMapCenter center={center} zoom={focusedCoords ? 14 : 12} />
 
-          {/* OpenStreetMap Standard Open Tiles - 100% Free, Zero API key required, Never Watermarked */}
+          {/* Modern CartoDB Voyager Tiles - Sleek, high-definition, 100% free, no API key required */}
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+            subdomains="abcd"
             maxZoom={19}
           />
 

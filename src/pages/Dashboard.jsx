@@ -11,6 +11,9 @@ import {
   Plane,
   LogOut,
   User,
+  Search,
+  X,
+  Clock,
 } from "lucide-react";
 import { getTrips, deleteTrip as deleteTripApi } from "../services/api.js";
 import { getDestinationCover } from "../services/unsplash.js";
@@ -28,6 +31,7 @@ function Dashboard() {
   });
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch saved trips from backend with localStorage fallback
   useEffect(() => {
@@ -102,6 +106,17 @@ function Dashboard() {
 
   const totalBudget = trips.reduce((acc, t) => acc + (Number(t.budget) || 0), 0);
   const totalDestinations = new Set(trips.map((t) => t.destination)).size;
+  const totalDays = trips.reduce((acc, t) => acc + (Number(t.duration) || 0), 0);
+
+  const filteredTrips = trips.filter((t) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      (t.destination || "").toLowerCase().includes(q) ||
+      (t.city || "").toLowerCase().includes(q) ||
+      (t.travelStyle || "").toLowerCase().includes(q)
+    );
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -162,37 +177,81 @@ function Dashboard() {
           </Link>
         </div>
 
-        {/* Stats Section */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-10">
-          <div className="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Saved Trips</p>
-            <p className="text-3xl font-extrabold text-gray-900 mt-2">{trips.length}</p>
+        {/* 4 Top KPI Summary Analytics Tiles */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+          <div className="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+              <Compass size={24} />
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Trips Saved</p>
+              <p className="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1">{trips.length}</p>
+            </div>
           </div>
 
-          <div className="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Destinations</p>
-            <p className="text-3xl font-extrabold text-gray-900 mt-2">{totalDestinations}</p>
+          <div className="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+              <MapPin size={24} />
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Destinations</p>
+              <p className="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1">{totalDestinations}</p>
+            </div>
           </div>
 
-          <div className="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Budget</p>
-            <p className="text-3xl font-extrabold text-gray-900 mt-2">${totalBudget.toLocaleString()}</p>
+          <div className="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+              <Clock size={24} />
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Days Traveled</p>
+              <p className="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1">{totalDays}</p>
+            </div>
           </div>
 
-          <div className="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">AI Model</p>
-            <p className="text-xl font-bold text-purple-600 mt-3 flex items-center gap-1.5">
-              <Sparkles size={16} /> Gemini 1.5
-            </p>
+          <div className="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <DollarSign size={24} />
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Budget</p>
+              <p className="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1">${totalBudget.toLocaleString()}</p>
+            </div>
           </div>
         </div>
 
-        {/* Saved Trips Grid */}
+        {/* Saved Trips Section */}
         <div>
-          <div className="flex items-center justify-between mb-6">
+          {/* Saved Trips Header & Live Search Filter */}
+          <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
             <h2 className="text-2xl font-bold text-gray-900">Your Saved Trips</h2>
-            <span className="text-sm text-gray-500">{trips.length} {trips.length === 1 ? "trip" : "trips"} found</span>
+            <p className="text-xs text-gray-500 mt-1">
+              Showing {filteredTrips.length} of {trips.length} itineraries
+            </p>
           </div>
+
+          {/* Live Search Input */}
+          <div className="relative w-full sm:w-72">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by city or style..."
+              className="w-full pl-9 pr-8 py-2.5 bg-white border border-gray-200 rounded-2xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition shadow-2xs"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200 transition"
+              >
+                <X size={12} />
+              </button>
+            )}
+          </div>
+        </div>
 
           {loading ? (
             <div className="py-20 text-center">
@@ -216,9 +275,26 @@ function Dashboard() {
                 Generate My First Trip
               </Link>
             </div>
+          ) : filteredTrips.length === 0 ? (
+            <div className="bg-white rounded-3xl border border-gray-200 p-12 text-center shadow-sm">
+              <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-400 mx-auto mb-4">
+                <Search size={28} />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-1">No Matching Trips Found</h3>
+              <p className="text-gray-500 max-w-sm mx-auto mb-5 text-xs">
+                No itineraries match your search for &ldquo;{searchQuery}&rdquo;. Try another destination or clear the filter.
+              </p>
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="px-5 py-2.5 rounded-xl bg-gray-100 text-gray-700 font-semibold text-xs hover:bg-gray-200 transition cursor-pointer"
+              >
+                Clear Search Filter
+              </button>
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {trips.map((trip) => (
+              {filteredTrips.map((trip) => (
                 <div
                   key={trip.id || trip.destination}
                   onClick={() => handleOpenTrip(trip)}
@@ -246,17 +322,41 @@ function Dashboard() {
                       </button>
                     </div>
 
-                    <div className="absolute bottom-4 left-4 text-white">
-                      <span className="text-xs bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full font-medium">
-                        {trip.travelStyle || "Vacation"}
-                      </span>
+                    <div className="absolute bottom-3 left-3 right-14 text-white flex flex-wrap gap-1">
+                      {(() => {
+                        const prefs = Array.isArray(trip.preferences) && trip.preferences.length > 0
+                          ? trip.preferences
+                          : (trip.travelStyle ? String(trip.travelStyle).split(",").map((p) => p.trim()).filter(Boolean) : ["Trip"]);
+                        return (
+                          <>
+                            {prefs.slice(0, 2).map((p) => (
+                              <span
+                                key={p}
+                                className="text-[11px] bg-black/60 backdrop-blur-md px-2.5 py-0.5 rounded-full font-medium shadow-xs"
+                              >
+                                {p}
+                              </span>
+                            ))}
+                            {prefs.length > 2 && (
+                              <span className="text-[10px] bg-black/40 backdrop-blur-md px-1.5 py-0.5 rounded-full font-normal self-center">
+                                +{prefs.length - 2}
+                              </span>
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
 
                   <div className="p-6 flex-1 flex flex-col justify-between">
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900 group-hover:text-purple-600 transition">
-                        {trip.destination}
+                      <h3 className="text-xl font-bold text-gray-900 group-hover:text-purple-600 transition flex items-baseline gap-1.5">
+                        <span>{trip.destination}</span>
+                        {trip.country && (
+                          <span className="text-xs font-normal text-gray-500">
+                            ({trip.country})
+                          </span>
+                        )}
                       </h3>
                       <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
                         <MapPin size={13} className="text-gray-400" />

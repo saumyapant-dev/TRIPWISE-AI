@@ -14,6 +14,8 @@ router.post("/generate", async (req, res, next) => {
     const {
       city,
       destination,
+      country,
+      coordinates,
       budget,
       duration,
       fromDate,
@@ -23,11 +25,44 @@ router.post("/generate", async (req, res, next) => {
       userId,
     } = req.body;
 
+    // Normalizing preferences and travelStyle
+    let normalizedPreferences = [];
+    if (Array.isArray(preferences)) {
+      normalizedPreferences = preferences.filter(Boolean);
+    } else if (typeof preferences === "string" && preferences.trim()) {
+      if (preferences.trim().startsWith("[") && preferences.trim().endsWith("]")) {
+        try {
+          normalizedPreferences = JSON.parse(preferences);
+        } catch {
+          normalizedPreferences = [preferences.trim()];
+        }
+      } else {
+        normalizedPreferences = preferences.split(",").map((p) => p.trim()).filter(Boolean);
+      }
+    } else if (travelStyle) {
+      normalizedPreferences = [travelStyle];
+    }
+
+    if (normalizedPreferences.length === 0) {
+      normalizedPreferences = ["Culture", "City Exploration"];
+    }
+
+    const effectiveTravelStyle =
+      (travelStyle && typeof travelStyle === "string" && travelStyle.trim()) ||
+      normalizedPreferences.join(", ");
+
     // Validation
-    if (!city || !budget || !duration || !travelStyle) {
+    if (!city || !destination) {
       return res.status(400).json({
         success: false,
-        error: "Missing required fields: city, budget, duration, and travelStyle are mandatory.",
+        error: "Starting city and destination city are both required.",
+      });
+    }
+
+    if (!budget || !duration) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required fields: budget and duration are mandatory.",
       });
     }
 
@@ -48,10 +83,10 @@ router.post("/generate", async (req, res, next) => {
       });
     }
 
-    const targetDestination = (destination && destination.trim()) || `${travelStyle} Getaway`;
+    const targetDestination = destination.trim();
 
     console.log(
-      `[API] Generating trip from ${city} to ${targetDestination} (${parsedDuration} days, $${parsedBudget})`
+      `[API] Generating trip from ${city} to ${targetDestination}${country ? ` (${country})` : ""} (${parsedDuration} days, $${parsedBudget}, Preferences: ${normalizedPreferences.join(", ")})`
     );
 
     // Parallel calls: Itinerary generation & Unsplash image
@@ -59,10 +94,12 @@ router.post("/generate", async (req, res, next) => {
       generateItinerary({
         city,
         destination: targetDestination,
+        country: country || "",
+        coordinates: coordinates || null,
         budget: parsedBudget,
         duration: parsedDuration,
-        travelStyle,
-        preferences,
+        travelStyle: effectiveTravelStyle,
+        preferences: normalizedPreferences,
       }),
       fetchDestinationImage(targetDestination),
     ]);
@@ -71,12 +108,14 @@ router.post("/generate", async (req, res, next) => {
       userId: userId || null,
       city,
       destination: targetDestination,
+      country: country || "",
+      coordinates: coordinates || null,
       budget: parsedBudget,
       duration: parsedDuration,
       fromDate: fromDate || "",
       toDate: toDate || "",
-      travelStyle,
-      preferences: preferences || "",
+      travelStyle: effectiveTravelStyle,
+      preferences: normalizedPreferences,
       imageUrl,
       tripData,
     };

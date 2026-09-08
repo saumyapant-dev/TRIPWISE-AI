@@ -61,8 +61,28 @@ export const tripsRepo = {
     const duration = Number(tripRecord.duration) || 7;
     const fromDate = tripRecord.fromDate || tripRecord.from_date || "";
     const toDate = tripRecord.toDate || tripRecord.to_date || "";
-    const travelStyle = tripRecord.travelStyle || tripRecord.travel_style || "Explorer";
-    const preferences = tripRecord.preferences || "";
+    const country = tripRecord.country || "";
+    let coordinatesStr = "";
+    if (tripRecord.coordinates) {
+      coordinatesStr =
+        typeof tripRecord.coordinates === "string"
+          ? tripRecord.coordinates
+          : JSON.stringify(tripRecord.coordinates);
+    }
+
+    let preferencesStr = "";
+    let travelStyle = tripRecord.travelStyle || tripRecord.travel_style || "";
+    if (Array.isArray(tripRecord.preferences)) {
+      preferencesStr = JSON.stringify(tripRecord.preferences);
+      if (!travelStyle) {
+        travelStyle = tripRecord.preferences.join(", ");
+      }
+    } else if (typeof tripRecord.preferences === "string") {
+      preferencesStr = tripRecord.preferences;
+      if (!travelStyle) travelStyle = preferencesStr;
+    }
+    if (!travelStyle) travelStyle = "Culture, City Exploration";
+
     const imageUrl =
       tripRecord.imageUrl ||
       tripRecord.image_url ||
@@ -107,22 +127,24 @@ export const tripsRepo = {
       // 2. Insert into trips
       const insertTripStmt = db.prepare(`
         INSERT INTO trips (
-          id, user_id, city, destination, budget, duration,
+          id, user_id, city, destination, country, coordinates, budget, duration,
           from_date, to_date, travel_style, preferences, image_url,
           created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       `);
       insertTripStmt.run(
         tripId,
         userId,
         city,
         destination,
+        country,
+        coordinatesStr,
         budget,
         duration,
         fromDate,
         toDate,
         travelStyle,
-        preferences,
+        preferencesStr,
         imageUrl
       );
 
@@ -303,18 +325,52 @@ export const tripsRepo = {
     // Saved places
     const savedPlaces = db.prepare("SELECT * FROM saved_places WHERE trip_id = ? ORDER BY created_at DESC").all(tripId);
 
+    // Parse coordinates
+    let parsedCoordinates = null;
+    if (tripRow.coordinates) {
+      try {
+        parsedCoordinates = JSON.parse(tripRow.coordinates);
+      } catch {
+        parsedCoordinates = null;
+      }
+    }
+
+    // Parse preferences as array
+    let parsedPreferences = [];
+    if (tripRow.preferences) {
+      const trimmed = String(tripRow.preferences).trim();
+      if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+        try {
+          parsedPreferences = JSON.parse(trimmed);
+        } catch {
+          parsedPreferences = [trimmed];
+        }
+      } else if (trimmed.includes(",")) {
+        parsedPreferences = trimmed.split(",").map((p) => p.trim()).filter(Boolean);
+      } else if (trimmed.length > 0) {
+        parsedPreferences = [trimmed];
+      }
+    } else if (tripRow.travel_style) {
+      parsedPreferences = String(tripRow.travel_style).split(",").map((p) => p.trim()).filter(Boolean);
+    }
+    if (!Array.isArray(parsedPreferences) || parsedPreferences.length === 0) {
+      parsedPreferences = ["Culture", "City Exploration"];
+    }
+
     // Formatted assembled trip structure
     return {
       id: tripRow.id,
       userId: tripRow.user_id,
       city: tripRow.city,
       destination: tripRow.destination,
+      country: tripRow.country || "",
+      coordinates: parsedCoordinates,
       budget: tripRow.budget,
       duration: tripRow.duration,
       fromDate: tripRow.from_date,
       toDate: tripRow.to_date,
-      travelStyle: tripRow.travel_style,
-      preferences: tripRow.preferences,
+      travelStyle: tripRow.travel_style || parsedPreferences.join(", "),
+      preferences: parsedPreferences,
       imageUrl: tripRow.image_url,
       createdAt: tripRow.created_at,
       updatedAt: tripRow.updated_at,
@@ -382,14 +438,35 @@ export const tripsRepo = {
     const duration = updates.duration !== undefined ? Number(updates.duration) : existing.duration;
     const fromDate = updates.fromDate !== undefined ? updates.fromDate : existing.from_date;
     const toDate = updates.toDate !== undefined ? updates.toDate : existing.to_date;
-    const travelStyle = updates.travelStyle !== undefined ? updates.travelStyle : existing.travel_style;
-    const preferences = updates.preferences !== undefined ? updates.preferences : existing.preferences;
+    const country = updates.country !== undefined ? updates.country : (existing.country || "");
+    let coordinates = existing.coordinates;
+    if (updates.coordinates !== undefined) {
+      coordinates =
+        typeof updates.coordinates === "string"
+          ? updates.coordinates
+          : JSON.stringify(updates.coordinates);
+    }
+
+    let preferences = existing.preferences;
+    let travelStyle = updates.travelStyle !== undefined ? updates.travelStyle : existing.travel_style;
+    if (updates.preferences !== undefined) {
+      if (Array.isArray(updates.preferences)) {
+        preferences = JSON.stringify(updates.preferences);
+        if (!updates.travelStyle) {
+          travelStyle = updates.preferences.join(", ");
+        }
+      } else {
+        preferences = updates.preferences;
+      }
+    }
     const imageUrl = updates.imageUrl !== undefined ? updates.imageUrl : existing.image_url;
 
     db.prepare(`
       UPDATE trips SET
         city = ?,
         destination = ?,
+        country = ?,
+        coordinates = ?,
         budget = ?,
         duration = ?,
         from_date = ?,
@@ -399,7 +476,7 @@ export const tripsRepo = {
         image_url = ?,
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
-    `).run(city, destination, budget, duration, fromDate, toDate, travelStyle, preferences, imageUrl, tripId);
+    `).run(city, destination, country, coordinates, budget, duration, fromDate, toDate, travelStyle, preferences, imageUrl, tripId);
 
     // If budget breakdown was supplied, update it, or recalculate if budget changed
     if (updates.budgetBreakdown) {

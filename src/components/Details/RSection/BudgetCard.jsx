@@ -5,7 +5,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const BudgetCard = ({ budgetData, targetBudget }) => {
+const BudgetCard = ({ budgetData, targetBudget, currencySymbol = "$" }) => {
 
   const total = budgetData.reduce(
     (sum, item) => sum + (Number(item.value) || 0),
@@ -31,11 +31,11 @@ const BudgetCard = ({ budgetData, targetBudget }) => {
         {budgetDiff !== null ? (
           budgetDiff >= 0 ? (
             <div className="px-3 py-1 rounded-full border border-emerald-200 bg-emerald-50 text-xs font-semibold text-emerald-700">
-              ✓ ${budgetDiff} under budget
+              ✓ {currencySymbol}{budgetDiff.toLocaleString()} under budget
             </div>
           ) : (
             <div className="px-3 py-1 rounded-full border border-rose-200 bg-rose-50 text-xs font-semibold text-rose-700">
-              ⚠️ ${Math.abs(budgetDiff)} over target
+              ⚠️ {currencySymbol}{Math.abs(budgetDiff).toLocaleString()} over target
             </div>
           )
         ) : (
@@ -78,7 +78,7 @@ const BudgetCard = ({ budgetData, targetBudget }) => {
             </p>
 
             <h2 className="text-2xl font-bold">
-              ${total}
+              {currencySymbol}{total.toLocaleString()}
             </h2>
 
           </div>
@@ -114,7 +114,7 @@ const BudgetCard = ({ budgetData, targetBudget }) => {
                   </div>
 
                   <span className="text-sm font-medium">
-                    ${item.value}
+                    {currencySymbol}{(Number(item.value) || 0).toLocaleString()}
                   </span>
 
                 </div>

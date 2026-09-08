@@ -6,6 +6,7 @@ const imageCache = new Map();
 const CITY_FALLBACKS = {
   seoul: "https://images.unsplash.com/photo-1538485399081-7191377e8241?w=1600&h=800&fit=crop",
   korea: "https://images.unsplash.com/photo-1538485399081-7191377e8241?w=1600&h=800&fit=crop",
+  busan: "https://images.unsplash.com/photo-1548115184-bc6544d06a58?w=1600&h=800&fit=crop",
   kerala: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=1600&h=800&fit=crop",
   alleppey: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=1600&h=800&fit=crop",
   kochi: "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?w=1600&h=800&fit=crop",
@@ -15,6 +16,32 @@ const CITY_FALLBACKS = {
   srinagar: "https://images.unsplash.com/photo-1595815771614-ade9d652a65d?w=1600&h=800&fit=crop",
   gulmarg: "https://images.unsplash.com/photo-1548013146-72479768bada?w=1600&h=800&fit=crop",
   pahalgam: "https://images.unsplash.com/photo-1566837945700-30057527ade0?w=1600&h=800&fit=crop",
+  chandigarh: "https://images.unsplash.com/photo-1595846519845-68e298c2edd8?w=1600&h=800&fit=crop",
+  gwalior: "https://images.unsplash.com/photo-1609137144822-094157155734?w=1600&h=800&fit=crop",
+  bhopal: "https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?w=1600&h=800&fit=crop",
+  indore: "https://images.unsplash.com/photo-1627894483216-2138af692e32?w=1600&h=800&fit=crop",
+  lucknow: "https://images.unsplash.com/photo-1598890777032-bde835ba27c2?w=1600&h=800&fit=crop",
+  kanpur: "https://images.unsplash.com/photo-1588416936097-41850ab3d86d?w=1600&h=800&fit=crop",
+  amritsar: "https://images.unsplash.com/photo-1588096344356-9a4f61f7480a?w=1600&h=800&fit=crop",
+  udaipur: "https://images.unsplash.com/photo-1615836245337-f5b9b2303f10?w=1600&h=800&fit=crop",
+  jodhpur: "https://images.unsplash.com/photo-1589308078059-be1415eab4c3?w=1600&h=800&fit=crop",
+  varanasi: "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=1600&h=800&fit=crop",
+  hyderabad: "https://images.unsplash.com/photo-1605649487212-47bdab064df8?w=1600&h=800&fit=crop",
+  bengaluru: "https://images.unsplash.com/photo-1596176530529-78163a4f7af2?w=1600&h=800&fit=crop",
+  bangalore: "https://images.unsplash.com/photo-1596176530529-78163a4f7af2?w=1600&h=800&fit=crop",
+  mysuru: "https://images.unsplash.com/photo-1600100397608-f010f4439c29?w=1600&h=800&fit=crop",
+  chennai: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=1600&h=800&fit=crop",
+  ooty: "https://images.unsplash.com/photo-1589182373726-e4f658ab50f0?w=1600&h=800&fit=crop",
+  kolkata: "https://images.unsplash.com/photo-1558431382-27e303142255?w=1600&h=800&fit=crop",
+  darjeeling: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=1600&h=800&fit=crop",
+  pune: "https://images.unsplash.com/photo-1579618218290-24a26f63a728?w=1600&h=800&fit=crop",
+  ahmedabad: "https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?w=1600&h=800&fit=crop",
+  rishikesh: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=1600&h=800&fit=crop",
+  dharamshala: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=1600&h=800&fit=crop",
+  manali: "https://images.unsplash.com/photo-1605649487212-47bdab064df8?w=1600&h=800&fit=crop",
+  shimla: "https://images.unsplash.com/photo-1588416936097-41850ab3d86d?w=1600&h=800&fit=crop",
+  athens: "https://images.unsplash.com/photo-1571401835393-8c5f35328320?w=1600&h=800&fit=crop",
+  nairobi: "https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?w=1600&h=800&fit=crop",
   assam: "https://images.unsplash.com/photo-1615880484746-a134be9a6ecf?w=1600&h=800&fit=crop",
   guwahati: "https://images.unsplash.com/photo-1615880484746-a134be9a6ecf?w=1600&h=800&fit=crop",
   kaziranga: "https://images.unsplash.com/photo-1575550959106-5a7defe28b56?w=1600&h=800&fit=crop",
@@ -33,7 +60,7 @@ const CITY_FALLBACKS = {
   "new york": "https://images.unsplash.com/photo-1499092346589-b9b6be3e94b2?w=1600&h=800&fit=crop",
   manhattan: "https://images.unsplash.com/photo-1499092346589-b9b6be3e94b2?w=1600&h=800&fit=crop",
   london: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1600&h=800&fit=crop",
-  uk: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1600&h=800&fit=crop",
+  "united kingdom": "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1600&h=800&fit=crop",
   rome: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=1600&h=800&fit=crop",
   italy: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=1600&h=800&fit=crop",
   florence: "https://images.unsplash.com/photo-1543429776-2782fc8e1acd?w=1600&h=800&fit=crop",
@@ -72,7 +99,11 @@ const CITY_FALLBACKS = {
 export async function fetchDestinationImage(destination) {
   if (!destination || typeof destination !== "string") return DEFAULT_IMAGE;
 
-  const cleanDest = destination.trim();
+  // Clean and sanitize destination name (strip words like "trip", "vacation", "getaway")
+  const cleanDest = destination
+    .trim()
+    .replace(/\b(trip|vacation|tour|getaway|holiday|itinerary|journey)\b/gi, "")
+    .trim() || destination.trim();
   const lower = cleanDest.toLowerCase();
 
   if (imageCache.has(lower)) {
@@ -160,7 +191,7 @@ export async function fetchDestinationImage(destination) {
 
   // 4. Check curated dictionary for known locations
   for (const [city, url] of Object.entries(CITY_FALLBACKS)) {
-    if (lower === city || lower.includes(city) || city.includes(lower)) {
+    if (lower === city || (lower.includes(city) && city.length >= 4) || (city.includes(lower) && lower.length >= 4)) {
       imageCache.set(lower, url);
       return url;
     }
@@ -172,9 +203,16 @@ export async function fetchDestinationImage(destination) {
 }
 
 export function getFallback(dest) {
-  const lower = (dest || "").toLowerCase();
+  const clean = (dest || "")
+    .trim()
+    .replace(/\b(trip|vacation|tour|getaway|holiday|itinerary|journey)\b/gi, "")
+    .trim()
+    .toLowerCase();
+
   for (const [city, url] of Object.entries(CITY_FALLBACKS)) {
-    if (lower === city || lower.includes(city) || city.includes(lower)) return url;
+    if (clean === city || (clean.includes(city) && city.length >= 4) || (city.includes(clean) && clean.length >= 4)) {
+      return url;
+    }
   }
   return DEFAULT_IMAGE;
 }

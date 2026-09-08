@@ -195,3 +195,13 @@ export async function getDestinationImage(destination) {
   const params = new URLSearchParams({ destination });
   return request(`/places/destination-image?${params.toString()}`);
 }
+
+/**
+ * Search cities globally with local fallback
+ */
+export async function searchCities(q = "", country = "") {
+  const params = new URLSearchParams();
+  if (q) params.set("q", q);
+  if (country && country !== "ALL") params.set("country", country);
+  return request(`/places/search-cities?${params.toString()}`);
+}

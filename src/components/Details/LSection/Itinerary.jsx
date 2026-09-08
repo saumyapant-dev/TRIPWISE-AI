@@ -17,6 +17,8 @@ import {
     Sparkles,
     ChevronLeft,
     ChevronRight,
+    Trash2,
+    RefreshCw,
 } from "lucide-react";
 import { getWeather } from "../../../services/api.js";
 
@@ -160,6 +162,8 @@ function Itinerary({
     toDate,
     city,
     destination,
+    onDeleteActivity,
+    onSwapActivity,
 }) {
 
     const [selectedDay, setSelectedDay] = useState(0);
@@ -316,12 +320,36 @@ function Itinerary({
           MAIN LAYOUT
       ========================================================= */}
 
-            <div className="grid grid-cols-[270px_1fr] gap-8 mt-8">
+            {/* Mobile / Tablet Horizontal Day Bar (Hidden on LG+) */}
+            <div className="lg:hidden flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none mb-6 mt-6">
+                {tripData.days.map((day, index) => {
+                    const active = selectedDay === index;
+                    return (
+                        <button
+                            key={day.day || index}
+                            onClick={() => {
+                                setSelectedDay(index);
+                                setExpandedCard(null);
+                            }}
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl whitespace-nowrap font-medium text-sm transition-all duration-200 cursor-pointer ${
+                                active
+                                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-200"
+                                    : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
+                            }`}
+                        >
+                            <span className={`w-2 h-2 rounded-full ${active ? "bg-white" : "bg-indigo-500"}`} />
+                            <span>Day {day.day}</span>
+                        </button>
+                    );
+                })}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-[270px_1fr] gap-8 mt-4 lg:mt-8">
                 {/* =========================================================
-            LEFT SIDEBAR
+            LEFT SIDEBAR (Desktop Sticky)
         ========================================================= */}
 
-                <aside className="bg-white rounded-[28px] border border-gray-200 shadow-sm p-6 h-fit sticky top-8">
+                <aside className="hidden lg:block bg-white rounded-[28px] border border-gray-200 shadow-sm p-6 h-fit sticky top-8">
 
                     <div className="flex items-center gap-2 mb-6">
 
@@ -638,12 +666,41 @@ function Itinerary({
                                                     </div>
                                                 </div>
 
-                                                {/* Expand Button */}
-                                                <button
-                                                    className="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center font-bold text-gray-600 transition shrink-0"
-                                                >
-                                                    {expandedCard === index ? "−" : "+"}
-                                                </button>
+                                                {/* Action Buttons: Swap, Delete, Expand */}
+                                                <div className="flex items-center gap-2 shrink-0">
+                                                    {onSwapActivity && (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                onSwapActivity(selectedDay, index);
+                                                            }}
+                                                            title="Swap with alternative activity"
+                                                            className="w-10 h-10 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-600 flex items-center justify-center transition cursor-pointer"
+                                                        >
+                                                            <RefreshCw size={15} />
+                                                        </button>
+                                                    )}
+
+                                                    {onDeleteActivity && (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                onDeleteActivity(selectedDay, index);
+                                                            }}
+                                                            title="Delete this activity"
+                                                            className="w-10 h-10 rounded-xl bg-red-50 hover:bg-red-100 text-red-500 flex items-center justify-center transition cursor-pointer"
+                                                        >
+                                                            <Trash2 size={15} />
+                                                        </button>
+                                                    )}
+
+                                                    {/* Expand Button */}
+                                                    <button
+                                                        className="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center font-bold text-gray-600 transition"
+                                                    >
+                                                        {expandedCard === index ? "−" : "+"}
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
 

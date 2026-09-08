@@ -9,7 +9,7 @@ import {
 } from "recharts";
 
 
-const CustomTooltip = ({ active, payload, label }) => {
+const CustomTooltip = ({ active, payload, label, currencySymbol = "$" }) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white px-5 py-3 rounded-2xl shadow-lg border border-gray-100">
@@ -18,7 +18,7 @@ const CustomTooltip = ({ active, payload, label }) => {
         </p>
 
         <p className="text-2xl font-bold">
-          ${payload[0].value}
+          {currencySymbol}{payload[0].value?.toLocaleString()}
         </p>
       </div>
     );
@@ -30,6 +30,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 const DailySpending = ({
   spendingData,
   highestDay,
+  currencySymbol = "$",
 }) => {
   return (
     <div className="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm">
@@ -76,7 +77,7 @@ const DailySpending = ({
 
             <Tooltip
               cursor={false}
-              content={<CustomTooltip />}
+              content={<CustomTooltip currencySymbol={currencySymbol} />}
             />
 
             <Bar
@@ -101,7 +102,7 @@ const DailySpending = ({
       </div>
 
       <p className="text-center text-gray-500 mt-1 text-sm">
-        Highest spending: {highestDay?.day} (${highestDay?.amount})
+        Highest spending: {highestDay?.day} ({currencySymbol}{highestDay?.amount?.toLocaleString()})
       </p>
 
     </div>

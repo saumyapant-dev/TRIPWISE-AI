@@ -17,9 +17,11 @@ import { getDestinationImage } from "../../services/api.js";
 function Hero({
   city,
   destination,
+  country,
   duration,
   imageUrl,
   travelStyle,
+  preferences,
   onSave,
   onShare,
   onExportPDF,
@@ -36,6 +38,10 @@ function Hero({
     setCurrentCover(instantCover);
   }
 
+  const prefList = Array.isArray(preferences) && preferences.length > 0
+    ? preferences
+    : (travelStyle ? String(travelStyle).split(",").map((p) => p.trim()).filter(Boolean) : []);
+
   useEffect(() => {
     let isMounted = true;
 
@@ -43,7 +49,9 @@ function Hero({
       getDestinationImage(destination)
         .then((res) => {
           if (isMounted && res && res.imageUrl && res.imageUrl.startsWith("http")) {
-            setCurrentCover(res.imageUrl);
+            if (!res.imageUrl.includes("photo-1469854523086-cc02fe5d8800")) {
+              setCurrentCover(res.imageUrl);
+            }
           }
         })
         .catch(() => {
@@ -94,14 +102,19 @@ function Hero({
 
         {/* Bottom Left Content */}
         <div className="absolute bottom-8 left-8 text-white">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            {destination}
+          <h1 className="text-4xl md:text-5xl font-bold mb-3 flex flex-wrap items-baseline gap-3">
+            <span>{destination}</span>
+            {country && (
+              <span className="text-xl md:text-2xl font-normal opacity-80">
+                ({country})
+              </span>
+            )}
           </h1>
 
-          <div className="flex flex-wrap items-center gap-6 text-lg">
+          <div className="flex flex-wrap items-center gap-4 text-base md:text-lg mb-3">
             <div className="flex items-center gap-2">
               <MapPin size={18} />
-              {destination}
+              {destination}{country ? `, ${country}` : ""}
             </div>
 
             <div className="flex items-center gap-2">
@@ -110,16 +123,25 @@ function Hero({
             </div>
 
             {city && (
-              <div className="flex items-center gap-2 opacity-90 text-sm md:text-base">
+              <div className="flex items-center gap-2 opacity-90 text-sm">
                 Departing from: {city}
               </div>
             )}
-
-            <div className="flex items-center gap-2">
-              <Users size={18} />
-              {travelStyle ? `${travelStyle} Trip` : "Personalized Trip"}
-            </div>
           </div>
+
+          {/* Multi-Preferences Badges */}
+          {prefList.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+              {prefList.map((pref) => (
+                <span
+                  key={pref}
+                  className="px-3 py-1 rounded-full bg-white/25 backdrop-blur-md border border-white/20 text-white text-xs font-medium shadow-xs"
+                >
+                  🎯 {pref}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Bottom Right Actions */}

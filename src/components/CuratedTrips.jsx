@@ -8,9 +8,10 @@ import {
     Utensils,
     Landmark,
     Compass,
-    Sparkles,
     Bookmark,
     BookmarkCheck,
+    Plus,
+    Navigation,
 } from "lucide-react";
 import { getCuratedPlaces, savePlace } from "../services/api.js";
 
@@ -74,12 +75,12 @@ const createSvgPlaceholder = (title = "Featured Place", category = "Explore") =>
 };
 
 const DISTINCT_CARD_ATTRACTION_FALLBACKS = [
-    "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1200&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1546874177-9e664107314e?w=1200&auto=format&fit=crop&q=80",
     "https://images.unsplash.com/photo-1441974231531-c6227db76b6?w=1200&auto=format&fit=crop&q=80",
     "https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=1200&auto=format&fit=crop&q=80",
     "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&auto=format&fit=crop&q=80",
     "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1200&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=1200&auto=format&fit=crop&q=80",
     "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=1200&auto=format&fit=crop&q=80",
     "https://images.unsplash.com/photo-1578637387939-43c525550085?w=1200&auto=format&fit=crop&q=80",
     "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200&auto=format&fit=crop&q=80",
@@ -157,30 +158,61 @@ const getPlaceImage = (place, destination = "", index = 0) => {
     )
         return "https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=1200&auto=format&fit=crop&q=80";
 
+    // Region-specific attraction matching to avoid European landmarks appearing in Asia/India
+    if (dest.includes("korea") || dest.includes("seoul") || dest.includes("busan")) {
+        if (name.includes("gamcheon") || name.includes("huinnyeoul") || name.includes("hanok") || name.includes("village"))
+            return "https://images.unsplash.com/photo-1548115184-bc6544d06a58?w=1200&auto=format&fit=crop&q=80";
+        if (name.includes("palace") || name.includes("gyeongbok") || name.includes("changdeok"))
+            return "https://images.unsplash.com/photo-1538485399081-7191377e8241?w=1200&auto=format&fit=crop&q=80";
+        if (name.includes("tower") || name.includes("namsan") || name.includes("diamond") || type.includes("viewpoint"))
+            return "https://images.unsplash.com/photo-1578637387939-43c525550085?w=1200&auto=format&fit=crop&q=80";
+        if (name.includes("beach") || name.includes("haeundae") || name.includes("gwangalli") || name.includes("coast"))
+            return "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&auto=format&fit=crop&q=80";
+        if (name.includes("fish") || name.includes("market") || name.includes("jagalchi") || name.includes("myeongdong"))
+            return "https://images.unsplash.com/photo-1583845112239-97ef1341b271?w=1200&auto=format&fit=crop&q=80";
+        if (name.includes("temple") || name.includes("yonggungsa") || name.includes("beomeosa") || name.includes("bongeunsa"))
+            return "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=1200&auto=format&fit=crop&q=80";
+    }
+
+    if (dest.includes("kerala") || dest.includes("kochi") || dest.includes("munnar") || dest.includes("alleppey") || dest.includes("india")) {
+        if (name.includes("backwater") || name.includes("houseboat") || name.includes("lake") || name.includes("canal"))
+            return "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=1200&auto=format&fit=crop&q=80";
+        if (name.includes("tea") || name.includes("plantation") || name.includes("hill"))
+            return "https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=1200&auto=format&fit=crop&q=80";
+        if (name.includes("fort") || name.includes("palace") || name.includes("kochi") || name.includes("amber"))
+            return "https://images.unsplash.com/photo-1599661046289-e31897846e41?w=1200&auto=format&fit=crop&q=80";
+        if (name.includes("temple") || name.includes("shrine") || name.includes("swamy"))
+            return "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=1200&auto=format&fit=crop&q=80";
+        if (name.includes("beach") || name.includes("cliff") || name.includes("varkala"))
+            return "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=1200&auto=format&fit=crop&q=80";
+        if (name.includes("wildlife") || name.includes("sanctuary") || name.includes("park"))
+            return "https://images.unsplash.com/photo-1584810359583-96fc3448beaa?w=1200&auto=format&fit=crop&q=80";
+    }
+
+    if (name.includes("eiffel") || (dest.includes("paris") && name.includes("tower")))
+        return "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1200&auto=format&fit=crop&q=80";
+
+    if (name.includes("big ben") || (dest.includes("london") && name.includes("palace")))
+        return "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1200&auto=format&fit=crop&q=80";
+
     if (
         name.includes("castle") ||
         name.includes("palace") ||
         name.includes("fort") ||
         name.includes("citadel") ||
-        name.includes("nijo") ||
-        name.includes("amber") ||
-        name.includes("hawa mahal") ||
-        name.includes("duomo") ||
         name.includes("cathedral") ||
         name.includes("basilica")
     )
-        return "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1200&auto=format&fit=crop&q=80";
+        return "https://images.unsplash.com/photo-1546874177-9e664107314e?w=1200&auto=format&fit=crop&q=80";
 
     if (
-        name.includes("eiffel") ||
         name.includes("tower") ||
         name.includes("skytree") ||
-        name.includes("statue") ||
-        name.includes("liberty") ||
-        name.includes("arch") ||
-        name.includes("colosseum")
+        name.includes("viewpoint") ||
+        name.includes("observatory") ||
+        name.includes("monument")
     )
-        return "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1200&auto=format&fit=crop&q=80";
+        return "https://images.unsplash.com/photo-1578637387939-43c525550085?w=1200&auto=format&fit=crop&q=80";
 
     if (
         name.includes("bridge") ||
@@ -267,7 +299,7 @@ const getPlaceImage = (place, destination = "", index = 0) => {
         return "https://images.unsplash.com/photo-1499092346589-b9b6be3e94b2?w=1200&auto=format&fit=crop&q=80";
     if (dest.includes("rome") || dest.includes("italy"))
         return "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=1200&auto=format&fit=crop&q=80";
-    if (dest.includes("london") || dest.includes("uk"))
+    if (dest.includes("london") || dest.includes("united kingdom") || /\buk\b/.test(dest))
         return "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1200&auto=format&fit=crop&q=80";
 
     // Safe cycling through distinct photos ensures NO two cards share the same photo
@@ -341,7 +373,14 @@ const getDescription = (place) => {
 /*                         Curated Place Card Component                       */
 /* -------------------------------------------------------------------------- */
 
-function CuratedPlaceCard({ place, destination, index = 0 }) {
+function CuratedPlaceCard({
+    place,
+    destination,
+    index = 0,
+    onAddToItinerary,
+    onViewOnMap,
+    duration = 3,
+}) {
     const placeName = getPlaceName(place);
     const placeType = getPlaceType(place);
 
@@ -350,6 +389,8 @@ function CuratedPlaceCard({ place, destination, index = 0 }) {
     const [imgSrc, setImgSrc] = useState(primaryUrl);
     const [errorStage, setErrorStage] = useState(0); // 0: primary, 1: category fallback, 2: offline svg
     const [imageLoaded, setImageLoaded] = useState(false);
+    const [selectedDay, setSelectedDay] = useState(1);
+    const [added, setAdded] = useState(false);
 
     if (primaryUrl !== prevUrl) {
         setPrevUrl(primaryUrl);
@@ -366,6 +407,15 @@ function CuratedPlaceCard({ place, destination, index = 0 }) {
         placeType.toLowerCase().includes("cafe") ||
         placeType.toLowerCase().includes("bakery") ||
         placeType.toLowerCase().includes("bar");
+
+    const handleAddToDay = (e) => {
+        e.stopPropagation();
+        if (onAddToItinerary) {
+            onAddToItinerary(place, selectedDay);
+            setAdded(true);
+            setTimeout(() => setAdded(false), 2200);
+        }
+    };
 
     const handleSavePlace = async (e) => {
         e.stopPropagation();
@@ -520,36 +570,65 @@ function CuratedPlaceCard({ place, destination, index = 0 }) {
                     </span>
                 </div>
 
-                <div className="flex justify-between items-center mt-3 pt-2">
-                    <button
-                        onClick={() =>
-                            window.open(
-                                `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                                    `${placeName} ${destination}`
-                                )}`,
-                                "_blank"
-                            )
-                        }
-                        className="text-indigo-600 hover:text-indigo-700 text-sm font-bold inline-flex items-center gap-1.5 transition cursor-pointer"
-                    >
-                        <span>Explore Place</span>
-                        <Sparkles size={14} />
-                    </button>
+                <div className="flex flex-wrap items-center justify-between gap-2.5 mt-3 pt-2">
+                    <div className="flex items-center gap-2">
+                        {onViewOnMap && (
+                            <button
+                                type="button"
+                                onClick={() => onViewOnMap(place)}
+                                title="Locate on interactive map"
+                                className="px-3 py-1.5 rounded-xl border border-gray-200 text-gray-700 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+                            >
+                                <Navigation size={13} className="text-indigo-600" />
+                                <span>Map</span>
+                            </button>
+                        )}
 
-                    <button
-                        onClick={() =>
-                            window.open(
-                                `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                                    `${placeName} ${destination}`
-                                )}`,
-                                "_blank"
-                            )
-                        }
-                        title={`Open ${placeName} on Google Maps`}
-                        className="w-10 h-10 rounded-xl border border-gray-200 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 flex items-center justify-center text-gray-500 transition cursor-pointer"
-                    >
-                        <ExternalLink size={16} />
-                    </button>
+                        <button
+                            type="button"
+                            onClick={() =>
+                                window.open(
+                                    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                                        `${placeName} ${destination}`
+                                    )}`,
+                                    "_blank"
+                                )
+                            }
+                            title={`Open ${placeName} on Google Maps`}
+                            className="w-8 h-8 rounded-xl border border-gray-200 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 flex items-center justify-center text-gray-500 transition cursor-pointer"
+                        >
+                            <ExternalLink size={14} />
+                        </button>
+                    </div>
+
+                    {onAddToItinerary && (
+                        <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-xl p-1">
+                            <select
+                                value={selectedDay}
+                                onChange={(e) => setSelectedDay(Number(e.target.value))}
+                                className="bg-transparent text-xs font-semibold text-gray-700 outline-none px-1 cursor-pointer"
+                                aria-label="Select itinerary day"
+                            >
+                                {Array.from({ length: Math.max(1, duration || 3) }, (_, i) => (
+                                    <option key={i + 1} value={i + 1}>
+                                        Day {i + 1}
+                                    </option>
+                                ))}
+                            </select>
+                            <button
+                                type="button"
+                                onClick={handleAddToDay}
+                                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer ${
+                                    added
+                                        ? "bg-emerald-600 text-white"
+                                        : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs"
+                                }`}
+                            >
+                                <Plus size={13} />
+                                <span>{added ? "Added!" : "Add"}</span>
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
@@ -560,7 +639,12 @@ function CuratedPlaceCard({ place, destination, index = 0 }) {
 /*                               Main Component                               */
 /* -------------------------------------------------------------------------- */
 
-function CuratedTrips({ destination }) {
+function CuratedTrips({
+    destination,
+    onAddToItinerary,
+    onViewOnMap,
+    duration = 3,
+}) {
     const [places, setPlaces] = useState([]);
     const [loading, setLoading] = useState(false);
     const [type, setType] = useState("tourist_attraction");
@@ -689,6 +773,9 @@ function CuratedTrips({ destination }) {
                             place={place}
                             destination={destination}
                             index={index}
+                            onAddToItinerary={onAddToItinerary}
+                            onViewOnMap={onViewOnMap}
+                            duration={duration}
                         />
                     ))}
                 </div>
@@ -789,7 +876,7 @@ function getDefaultFallbackPlaces(dest, type) {
             currentOpeningHours: { openNow: true },
             description: `Quintessential pedestrian district with preserved historic architecture and artisan boutiques in ${dest}.`,
             tags: ["Historic", "Iconic", "Must Visit"],
-            image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1200&auto=format&fit=crop&q=80",
+            image: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=1200&auto=format&fit=crop&q=80",
         },
         {
             name: `${dest} Central Botanical Gardens`,
@@ -818,24 +905,24 @@ function getDefaultFallbackPlaces(dest, type) {
         {
             name: `${dest} Panoramic Ridge Viewpoint`,
             displayName: { text: `${dest} Panoramic Ridge Viewpoint` },
-            rating: 4.9,
-            userRatingCount: 1840,
+            rating: 4.8,
+            userRatingCount: 1640,
             type: "Viewpoint",
             primaryTypeDisplayName: { text: "Viewpoint" },
             currentOpeningHours: { openNow: true },
-            description: "Dramatic elevated outlook providing 360-degree vistas over the landscape and surrounding horizon.",
-            tags: ["Scenic", "Viewpoint", "Sunset"],
+            description: "Breathtaking observation lookout providing sweeping horizons and dramatic sunset vistas.",
+            tags: ["Scenic", "Sunset", "Viewpoint"],
             image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&auto=format&fit=crop&q=80",
         },
         {
-            name: `${dest} Waterfront Promenade & Pier`,
-            displayName: { text: `${dest} Waterfront Promenade & Pier` },
-            rating: 4.8,
-            userRatingCount: 1650,
-            type: "Tourist Attraction",
-            primaryTypeDisplayName: { text: "Tourist Attraction" },
+            name: `${dest} Riverside Waterfront Walkway`,
+            displayName: { text: `${dest} Riverside Waterfront Walkway` },
+            rating: 4.7,
+            userRatingCount: 1890,
+            type: "Promenade",
+            primaryTypeDisplayName: { text: "Promenade" },
             currentOpeningHours: { openNow: true },
-            description: "Vibrant seaside promenade filled with street buskers, coastal dining, and sunset strolls.",
+            description: "Vibrant pedestrian river promenade alive with open-air cafes, public art, and evening breezes.",
             tags: ["Waterfront", "Walking", "Atmosphere"],
             image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&auto=format&fit=crop&q=80",
         },
@@ -849,7 +936,7 @@ function getDefaultFallbackPlaces(dest, type) {
             currentOpeningHours: { openNow: true },
             description: "Centuries-old fortress and monumental central plaza anchoring the heart of ${dest}.",
             tags: ["Landmark", "Architecture", "Historic"],
-            image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1200&auto=format&fit=crop&q=80",
+            image: "https://images.unsplash.com/photo-1546874177-9e664107314e?w=1200&auto=format&fit=crop&q=80",
         },
     ];
 }
