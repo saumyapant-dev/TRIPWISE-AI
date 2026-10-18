@@ -5,8 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "start": "node server/src/index.js",
     "server": "node server/src/index.js",
     "server:dev": "node --watch server/src/index.js",
+    "server:install": "cd server && npm install",
     "db:seed": "node server/src/db/seed.js",
     "build": "vite build",
     "lint": "eslint .",

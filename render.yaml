@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: tripwise-ai
+    runtime: node
+    plan: free
+    branch: main
+    buildCommand: npm install && npm run build && cd server && npm install
+    startCommand: node server/src/index.js
+    envVars:
+      - key: NODE_VERSION
+        value: 22.16.0
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5001
+      - key: JWT_SECRET
+        generateValue: true
+      - key: GEMINI_API_KEY
+        sync: false

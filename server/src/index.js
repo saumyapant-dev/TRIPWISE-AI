@@ -5,6 +5,8 @@ import { fileURLToPath } from "url";
 import express from "express";
 import cors from "cors";
 import { initSchema } from "./db/schema.js";
+import { runSeed } from "./db/seed.js";
+import { tripsRepo } from "./db/repositories.js";
 import tripsRouter from "./routes/trips.js";
 import weatherRouter from "./routes/weather.js";
 import placesRouter from "./routes/places.js";
@@ -18,6 +20,17 @@ const distPath = path.resolve(__dirname, "../../dist");
 
 // Initialize SQLite Schema
 initSchema();
+
+// Auto-seed database if empty (ensures demo trips & user exist on fresh cloud containers)
+try {
+  const existingTrips = tripsRepo.getAllTrips();
+  if (!existingTrips || existingTrips.length === 0) {
+    console.log("[DB] Empty database detected. Auto-seeding initial demo data...");
+    runSeed();
+  }
+} catch (err) {
+  console.warn("[DB] Auto-seed check notice:", err.message);
+}
 
 const app = express();
 const PORT = process.env.PORT || 5001;
